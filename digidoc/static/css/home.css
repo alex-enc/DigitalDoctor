@@ -1,0 +1,16 @@
+.form-control:focus {
+    border-color: #6495ED;
+    box-shadow: 0 0 0 0.2rem rgba(100, 149, 237, 0.25);
+} 
+
+.temp-logo{
+    color: #6495ED;
+    display: flex; /* Set display property to flex */
+    align-items: center; /* Align items vertically in the center */
+    justify-content: center;
+    text-align: center;
+    position: absolute;
+    height: 90vh;
+    margin: 0;
+    /* font-weight: bolder; */
+}
