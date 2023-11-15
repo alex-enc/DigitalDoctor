@@ -12,5 +12,26 @@
     position: absolute;
     height: 90vh;
     margin: 0;
-    /* font-weight: bolder; */
+}
+
+.large-textbox{
+    height: 50px;
+    /* width: 300px; */
+}
+
+.navbar{
+    font-size: 20px;
+}
+
+.nav-logo{
+    font-size: 40px;
+    font-weight: bolder;
+}
+
+.input-box{
+
+
+    justify-content: center;
+    text-align: center;
+
 }
