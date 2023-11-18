@@ -9,7 +9,7 @@
 <body>
     <nav class="navbar navbar-dark navbar-expand-lg " style="background-color: #6495ED;">
         <div class="container-fluid">
-            <a class="navbar-brand" href="#"><strong>DigiDoc</strong></a>
+            <a class="navbar-brand" href='{% url 'home' %}'><strong>DigiDoc</strong></a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -35,32 +35,40 @@
                 <div class="col-12 my-auto">
                     <div class="container">
                         <div class="card mb-3 mx-auto text-center" style="width: 35rem;">
-                            <div class="card  mt-4 mx-auto text-center border-0" >
+                            <div class="card  mt-4  border-0" >
                                 <h2><strong>Sign Up</strong></h2>
                                 <div class="card-body">
                                     <div class="mb-3 form-group div-wrapper justify-content-center align-items-center">
                                         {% for field in form %}
-                                            <div class="mb-3">
-                                                {{ field.label_tag }}
-                                                {% if form.is_bound %}
-                                                    {% if field.errors %}
-                                                        {% render_field field class="form-control is-invalid" %}
-                                                    {% else %}
-                                                        {% render_field field class="form-control is-valid" %}
-                                                    {% endif %}
-                                                {% else %}
-                                                    {%  render_field field class="form-control" %}
-                                                {% endif %}
-                                                <div class="valid-feedback">
-                                                    Looks good!
-                                                </div>
-                                                <div class="invalid-feedback">
-                                                    {{ field.errors }}
+                                            <div class="form-group row">
+                                                <label for="{{ field.id_for_label }}" class="col-sm-4 col-form-label">{{ field.label }}</label>
+                                                <div class="col-sm-8">
+                                                    {{ field }}
                                                 </div>
                                             </div>
+                                  
+                                
+                                            <!-- {% if form.is_bound %}
+                                                {% if field.errors %}
+                                                    {% render_field field class="form-control is-invalid" %}
+                                                {% else %}
+                                                    {% render_field field class="form-control is-valid" %}
+                                                {% endif %}
+                                            {% else %}
+                                                {%  render_field field class="form-control" %}
+                                            {% endif %} -->
+                                            <div class="valid-feedback">
+                                                Looks good!
+                                            </div>
+                                            <div class="invalid-feedback">
+                                                {{ field.errors }}
+                                            </div>
+                                            
                                         {% endfor %}
-                <input type="submit" value="Sign Up">
+                                       
             </form>
+
+            <button type="submit" class="btn btn-primary">Sign Up</button>
         </div>
       </div>
 
