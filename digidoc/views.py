@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from .forms import SignUpForm
 from django.contrib import messages
 
@@ -8,21 +8,21 @@ def home(request):
 def chat(request):
     return render(request, 'chat.html')
 
-def sign_up(request):
-    form = SignUpForm()
-    return render(request, 'sign_up.html', {'form' : form})
+# def sign_up(request):
+#     form = SignUpForm()
+#     return render(request, 'sign_up.html', {'form' : form})
 
 def login(request):
     return render(request, 'login.html')
 
-# def sign_up(request):
-#     if request.method == 'POST':
-#         form = SignUpForm(request.POST)
-#         if form.is_valid():
-#             user = form.save()
-#             login(request, user)
-#             return redirect('feed')
-#     else:
-#         form = SignUpForm()
-#     return render(request, 'sign_up.html', {'form': form})
+def sign_up(request):
+    if request.method == 'POST':
+        form = SignUpForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            # login(request, user)
+            return redirect('chat')
+    else:
+        form = SignUpForm()
+    return render(request, 'sign_up.html', {'form': form})
 
