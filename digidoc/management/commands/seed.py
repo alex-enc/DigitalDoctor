@@ -5,7 +5,7 @@ from digidoc.models import User
 class Command(BaseCommand):
     PASSWORD = "Password123"
     USER_COUNT = 100
-    
+
     def __init__(self):
         super().__init__()
         self.faker = Faker('en_GB')
@@ -25,7 +25,7 @@ class Command(BaseCommand):
         first_name = self.faker.first_name()
         last_name = self.faker.last_name()
         email = self._email(first_name, last_name)
-        username = self._email(first_name, last_name)
+        username = self._username(first_name, last_name)
         User.objects.create_user(
             username,
             first_name=first_name,
@@ -37,3 +37,7 @@ class Command(BaseCommand):
     def _email(self, first_name, last_name):
         email = f'{first_name}.{last_name}@example.org'
         return email
+
+    def _username(self, first_name, last_name):
+        username = f'{first_name}.{last_name}@example.org'
+        return username
