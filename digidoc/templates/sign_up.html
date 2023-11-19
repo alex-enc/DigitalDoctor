@@ -27,49 +27,34 @@
             </div>
         </div>
     </nav>
-    <form action="{% url 'sign_up' %}" method="post">
-        {% csrf_token %}                        
+
         {% load widget_tweaks %} 
         <div class="container vh-100">
             <div class="row h-100">
                 <div class="col-12 my-auto">
                     <div class="container">
                         <div class="card mb-3 mx-auto text-center" style="width: 35rem;">
-                            <div class="card  mt-4  border-0" >
-                                <h2><strong>Sign Up</strong></h2>
-                                <div class="card-body">
-                                    <div class="mb-3 form-group div-wrapper justify-content-center align-items-center">
-                                        {% for field in form %}
-                                            <div class="form-group row">
-                                                <label for="{{ field.id_for_label }}" class="col-sm-4 col-form-label">{{ field.label }}</label>
-                                                <div class="col-sm-8">
-                                                    {{ field }}
-                                                </div>
-                                            </div>
-                                  
-                                
-                                            <!-- {% if form.is_bound %}
-                                                {% if field.errors %}
-                                                    {% render_field field class="form-control is-invalid" %}
-                                                {% else %}
-                                                    {% render_field field class="form-control is-valid" %}
-                                                {% endif %}
-                                            {% else %}
-                                                {%  render_field field class="form-control" %}
-                                            {% endif %} -->
-                                            <div class="valid-feedback">
-                                                Looks good!
-                                            </div>
-                                            <div class="invalid-feedback">
-                                                {{ field.errors }}
-                                            </div>
-                                            
-                                        {% endfor %}
-                                       
-            </form>
-
-            <button type="submit" class="btn btn-primary">Sign Up</button>
-        </div>
+                            <div class="card-body">
+                                <h2 class="card-title mb-3" style="color: #6495ED;"><strong>Sign Up</strong></h2>
+                                <form action="{% url 'sign_up' %}" method="post">
+                                    {% csrf_token %}
+                                    {% for field in form %}
+                                        <div class="form-group mb-3">
+                                            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                            {{ field|add_class:"form-control" }}
+                                        </div>
+                                    {% endfor %}
+                                    
+                                    
+                                    <!-- <button type="submit" class="btn btn-primary" href="#"style="height:40px; width:100px; background-color: #6495ED;">Sign Up</button> -->
+                                    <a role="button" class="btn btn-primary"  href="#">Sign Up</a>
+                                    
+                                     </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
       </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>

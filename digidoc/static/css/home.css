@@ -16,7 +16,6 @@
 
 .large-textbox{
     height: 50px;
-    /* width: 300px; */
 }
 
 .navbar{
@@ -35,3 +34,9 @@
     text-align: center;
 
 }
+
+/* .btn-primary:hover {
+    background-color:#da45c8 !important;
+    color:  #000000 !important;
+    /* transition: 0.7s; */
+} */

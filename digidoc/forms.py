@@ -16,7 +16,7 @@ class SignUpForm(forms.ModelForm):
         )
             ]
         )
-    password_confirmation = forms.CharField(label='Confirm Password:', widget=forms.PasswordInput())
+    password_confirmation = forms.CharField(label='Confirm Password', widget=forms.PasswordInput())
 
 
     '''Creates new user'''
