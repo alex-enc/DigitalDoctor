@@ -1,13 +1,13 @@
 from django.test import TestCase
-from .models import User
+from ..models import User
 from django.core.exceptions import ValidationError
 
-# Create your tests here.
+# User model tests
 class UserModelTestCase(TestCase):
     #tests whether the user created is valid
     def setUp(self):
         self.user = User.objects.create_user(
-            'johndoe',
+            'johndoe@example.org',
             first_name = 'John',
             last_name = 'Doe',
             email = 'johndoe@example.org',
@@ -30,3 +30,4 @@ class UserModelTestCase(TestCase):
     def _assert_user_is_invalid(self):
         with self.assertRaises(ValidationError):
             self.user.full_clean()
+
