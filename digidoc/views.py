@@ -12,6 +12,9 @@ def sign_up(request):
     form = SignUpForm()
     return render(request, 'sign_up.html', {'form' : form})
 
+def login(request):
+    return render(request, 'login.html')
+
 # def sign_up(request):
 #     if request.method == 'POST':
 #         form = SignUpForm(request.POST)
