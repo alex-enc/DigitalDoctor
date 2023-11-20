@@ -1,0 +1,14 @@
+[
+    {
+      "model": "digidoc.user",
+      "pk": 2,
+      "fields": {
+        "first_name": "Jane",
+        "last_name": "Smith",
+        "username": "",
+        "email": "janedoe@example.org",
+        "password": "pbkdf2_sha256$260000$TgNTFUf4pOfWn2vnPjB7bJ$9P0CKsdZHVK6/xdHeWXorffi4ff7OLDUJ8psvk50HTM=",
+        "is_active": true
+      }
+    }
+  ]
