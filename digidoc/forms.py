@@ -3,7 +3,7 @@ from .models import User
 from django.core.validators import RegexValidator
 
 class LogInForm(forms.Form):
-    email = forms.CharField(label="Email")
+    username = forms.CharField(label="Username")
     password = forms.CharField(label="Password", widget=forms.PasswordInput())
 
 
