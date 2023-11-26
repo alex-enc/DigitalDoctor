@@ -36,7 +36,11 @@
                     <div class="card mb-3 mx-auto text-center" style="width: 35rem;">
                         <div class="card-body">
                             <h2 class="card-title mb-3" style="color: #6495ED;"><strong>Log In</strong></h2>
+                            {% for message in messages %}
+                                <p><b> {{ message }} </b></p>
+                            {% endfor %}
                             <form action="{% url 'log_in' %}" method="post">
+                                
                                 {% csrf_token %}
                                 {% for field in form %}
                                     <div class="form-group mb-3">
