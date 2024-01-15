@@ -5,6 +5,35 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
     <title>DigiDoc</title>
     <link rel="stylesheet" href="{% static 'css/home.css' %}">
+    <script>
+        const options = {
+            method: 'POST',
+            headers: {
+            accept: 'application/json',
+            'content-type': 'application/json',
+            authorization: 'Bearer eyJraWQiOiI0Y2RmY2Q0OS1kM2QyLTRlZGMtYThlZi02MDY5ZjRmZWYwNmMiLCJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJ5bWRNb3JzZV9JQnZOM1hXSTVzYWtpcEFnQXV0QnpGaXBPQVlUNlR3WWZja2x5ZXVqbEdKWHciLCJhdWQiOiJLaW5nc0NvbGxlZ2VMb25kb24iLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwiZGV2aWNlX2lkIjoicGFydG5lcl9LaW5nc0NvbGxlZ2VMb25kb25fYjFjNWVkMGQwZWI1MTg1MWEyNWZlYTYyZTAyNjE2YzlkMGQ5MzFjZjliY2VhODJiYWY4MmZkZTFmMDY0M2VkZCIsIm5hbWUiOiJhbGV4ZSIsImRlbGV0ZV9hdCI6MTcwNDAzMDIzMSwicGlkIjoiZDhKNFRtcWFIeVhoNUg1dW8yWVRKSEIxNUdydktQTFciLCJlbWFpbCI6ImFsZXhAZXhhbXBsZS5vcmciLCJpc3MiOiJ5bWQtaW50ZXJuYWwtc2VydmljZS1wcm9kIiwianRpIjoiMDUwZTcwODktYmYwYS00ZjAxLWE4MGEtNGVjOGMzNzcwZWVkIiwiaWF0IjoxNzAzODU3NDMxLCJleHAiOjE3MDM4NTkyMzF9.fRyOVZ7vZ7AetzxAlFExxGtTCXwJ6G6o2OTUBkVmlnt73agGmim-8PgN2YWYnPp8-e5cmyYaR-P6jQwu084qoSaaF9vYExrmXOf6kgfrcqIrj53HP1rqLWJy8c931LriimUfFFNed-kbzq17k-dc9m1wJtZtiJX58vZ2XuJr2np6VeqBiCmUBf2dymLRybqFolqQw9nYxKXFOjy-BWQNFCzxEcqVW7NJl7Mk_Uy_33lRACfJLNuhMEL_jtTjrr2u7ks7c2DimSHk5Oe7DhbbWPUJyrBKn80GR9IhSMvheSSmAss--jBQXeMlarZZFZUpc9qUwMNeMSgXFVTWeYPtqg',
+            'x-api-key': '2jqSPFo7ki5faZtPG66ys5BgNpMnNX5vaKFj1MlL'
+            },
+            body: JSON.stringify({
+            conversation: {
+                symptoms_summary: {selected: [{cui: 'initial', name: 'Coughing'}]},
+                progress: {percentage: 10, stage: 'first'},
+                id: 'first1',
+                scenario: 'chat',
+                phase: 'firstPhase',
+                available_commands: ['STOP_CONVERSATION']
+            },
+            answer: {type: 'year_of_birth', value: 2002}
+            })
+        };
+        
+        fetch('https://portal.your.md/v4/chat', options)
+            .then(response => response.json())
+            .then(response => console.log(response))
+            .catch(err => console.error(err));
+    </script>
+
+
 </head>
 <body>
     <nav class="navbar navbar-dark navbar-expand-lg " style="background-color: #6495ED;">
@@ -63,10 +92,10 @@
     <div class="container fixed-bottom mb-3 input-box">
         <div class="row mb-3">
             <div class="col-11">
-                <input type="text" class="form-control  large-textbox" placeholder="Enter your symptoms...">
+                <input type="text" class="form-control  large-textbox" placeholder="Enter your symptoms..." id="inputData" name="inputData">
             </div>
             <div class="col-1">
-                <button type="button" class="btn btn-primary btn-lg">
+                <button type="button" class="btn btn-primary btn-lg" onclick="sendData()">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-send" viewBox="0 0 16 16">
                         <path d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576 6.636 10.07Zm6.787-8.201L1.591 6.602l4.339 2.76 7.494-7.493Z"/>
                     </svg>
