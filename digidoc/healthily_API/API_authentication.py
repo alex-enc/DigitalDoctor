@@ -31,11 +31,12 @@ class APIAuthenticate():
         return self.response.json()
 
 
-response_data = APIAuthenticate()
-response_data.set_response()
-status = response_data.get_response_status()
-print(status)
-if status == 200:
-    print(response_data.get_response_data())
-else:
-    print("Status code: "  + status)
+# response_data = APIAuthenticate()
+# response_data.set_response()
+# status = response_data.get_response_status()
+# print(status)
+# if status == 200:
+#     print(response_data.get_response_data())
+#     print('access_token: ' + response_data.get_response_data()['access_token'])
+# else:
+#     print("Status code: "  + status)
