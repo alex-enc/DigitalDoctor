@@ -15,11 +15,11 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from digidoc import views
+from digidoc.views import chat_view, home_view
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', views.home, name='home'),
-    path('chat/', views.chat, name='chat')
+    path('', home_view.home, name='home'),
+    path('chat/', chat_view.chat, name='chat')
 ]
 

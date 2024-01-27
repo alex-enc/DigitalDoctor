@@ -1,6 +1,8 @@
+from django.shortcuts import render, redirect
+from django.contrib import messages
 import requests
-from API_authentication import APIAuthenticate
 
+from digidoc.healthily_API.API_authentication import APIAuthenticate
 class Chat():
     def __init__(self):
         self.url = "https://portal.your.md/v4/chat"
@@ -59,8 +61,14 @@ print(response_data.get_headers())
 response_data.set_response()
 status = response_data.get_response_status()
 print("Status: " + str(status))
+api_data = response_data.get_response_data()
 if status == 200:
-    print( response_data.get_response_data())
+    print(api_data)
 else:
     print(status)
 # print("Authorization: " + response_data.get_authorization())
+
+
+def chat(request):
+    return render(request, 'chat.html', {'api_data': api_data})
+
