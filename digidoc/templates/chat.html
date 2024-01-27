@@ -60,12 +60,13 @@
         </div>
     </div>
     <div>
-        {% if api_data %}
+        {% if messages %}
         <ul>
-            {% for item in api_data %}
-                <li>{{ item }}</li>
-                <li>{{ api_data }}</li>
+            {% for message in messages %}
+                <li>{{ message.text }}</li>
             {% endfor %}
+            
+            
         </ul>
     {% else %}
         <p>No data available from the API.</p>

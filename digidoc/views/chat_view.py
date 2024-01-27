@@ -62,6 +62,7 @@ response_data.set_response()
 status = response_data.get_response_status()
 print("Status: " + str(status))
 api_data = response_data.get_response_data()
+messages = api_data.get('question', {}).get('messages' , [])
 if status == 200:
     print(api_data)
 else:
@@ -70,5 +71,5 @@ else:
 
 
 def chat(request):
-    return render(request, 'chat.html', {'api_data': api_data})
+    return render(request, 'chat.html', {'messages': messages})
 
