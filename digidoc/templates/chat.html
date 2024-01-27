@@ -9,7 +9,7 @@
 <body>
     <nav class="navbar navbar-dark navbar-expand-lg " style="background-color: #6495ED;">
         <div class="container-fluid">
-            <a class="navbar-brand" href="#"><strong>DigiDoc</strong></a>
+            <a class="navbar-brand" href="{% url 'home' %}"><strong>DigiDoc</strong></a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -54,19 +54,12 @@
     </nav>
 
     <!-- messages area -->
-    <div class="row mb-9"> 
-        <div class="container-lg mt-3 temp-logo">
-            <h1 style="font-size:100px"><strong>DigiDoc</strong></h1>
-        </div>
-    </div>
     <div>
         {% if messages %}
         <ul>
             {% for message in messages %}
                 <li>{{ message.text }}</li>
             {% endfor %}
-            
-            
         </ul>
     {% else %}
         <p>No data available from the API.</p>
