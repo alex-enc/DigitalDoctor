@@ -1,0 +1,15 @@
+.api-message-bubble {
+    border-radius: 30px;
+    padding: 10px 15px;
+    margin-bottom: 10px;
+    background-color: #6495ED; 
+    color: #ffffff; 
+}
+
+.user-message-bubble {
+    border-radius: 30px;
+    padding: 10px 15px;
+    margin-bottom: 10px;
+    background-color: #baccee; 
+    color: #000000; 
+}
