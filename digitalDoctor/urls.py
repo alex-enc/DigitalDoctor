@@ -20,6 +20,7 @@ from digidoc.views import chat_view, home_view
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', home_view.home, name='home'),
-    path('chat/', chat_view.chat, name='chat')
+    path('chat/', chat_view.chat, name='chat'),
+    path('send_message/', chat_view.send_message, name='send_message')
 ]
 

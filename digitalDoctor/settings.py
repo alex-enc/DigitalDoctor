@@ -119,6 +119,8 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
+AUTH_USER_MODEL = 'digidoc.User'
+
 # # User model for authentication and login purposes
 # AUTH_USER_MODEL = 'digidoc.User'
 # Default primary key field type
