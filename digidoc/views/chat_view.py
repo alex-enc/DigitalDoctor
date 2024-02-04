@@ -3,6 +3,7 @@ from django.contrib import messages
 import requests
 import json
 from digidoc.models.message_models import Message
+from digidoc.forms.chat_forms import SendMessageForm
 
 from digidoc.healthily_API.API_authentication import APIAuthenticate
 class Chat():
@@ -94,16 +95,17 @@ else:
 #         return render(request, 'chat.html', {'messages': messages})
 
 def chat(request):
+    form = SendMessageForm()
     if request.method == 'GET':
         print("GET")
         user_messages = Message.objects.all()
-        return render(request, 'chat.html', {'messages': messages})
+        return render(request, 'chat.html', {'messages': messages, 'form': form})
     elif request.method == 'POST': 
         print("POST")        
         sender = request.POST.get('sender')
         content = request.POST.get('content')
         user_message = Message.objects.create(sender=sender, content=content)
-        return render(request, 'chat.html', {'user_message': user_message})
+        return render(request, 'chat.html', {'user_message': user_message, 'form': form})
     return redirect('chat') 
 
 def send_message(request):
@@ -117,7 +119,7 @@ def send_message(request):
                 message = Message.objects.create(author=current_user, text=text)
                 return redirect('chat')
             else:
-                return render(request, 'chat.html', {'form': form})
+                return render(request, 'chat.html', {'messages':messages, 'form': form})
         else:
             return redirect('home')
     else:
