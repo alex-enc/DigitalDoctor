@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 import requests
 import json
-from digidoc.models import Message
+from digidoc.models.message_models import Message
 
 from digidoc.healthily_API.API_authentication import APIAuthenticate
 class Chat():
