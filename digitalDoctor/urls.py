@@ -21,6 +21,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', home_view.home, name='home'),
     path('chat/', chat_view.chat, name='chat'),
-    path('send_message/', chat_view.send_message, name='send_message')
+    path('new_chat/', chat_view.new_chat, name='new_chat')
 ]
 

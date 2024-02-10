@@ -40,6 +40,7 @@ class Chat():
             "x-api-key": "2jqSPFo7ki5faZtPG66ys5BgNpMnNX5vaKFj1MlL"
         }
         self.response = None
+        self.formatted_input = None
 
     def get_authorization(self):
         auth_key = APIAuthenticate()
@@ -57,19 +58,21 @@ class Chat():
     
     def get_response_data(self):
         return self.response.json()
+
+    def set_formatted_input(self):
+        self.formatted_input =  {
+                "answer": {
+                    "type": "entry",
+                    "name": (user_message.content).text,
+                    "gender": "male",
+                    "year_of_birth": 1978,
+                    "initial_symptom": "shaking",
+                    "other": true
+                }
+            }
     
-    
-response_data = Chat()
-print(response_data.get_headers())
-response_data.set_response()
-status = response_data.get_response_status()
-print("Status: " + str(status))
-api_data = response_data.get_response_data()
-messages = api_data.get('question', {}).get('messages' , [])
-if status == 200:
-    print(api_data)
-else:
-    print(status)
+
+
 # print("Authorization: " + response_data.get_authorization())
 
 
@@ -95,40 +98,56 @@ else:
 #         return render(request, 'chat.html', {'messages': messages})
 
 def chat(request):
-    form = SendMessageForm()
     if request.method == 'GET':
+        form = SendMessageForm()
         print("GET")
-        user_messages = Message.objects.all()
-        return render(request, 'chat.html', {'messages': messages, 'form': form})
+        all_messages = Message.objects.all()
+        return render(request, 'chat.html', {'messages': all_messages, 'form': form})
     elif request.method == 'POST': 
         print("POST")        
-        sender = request.POST.get('sender')
-        content = request.POST.get('content')
-        user_message = Message.objects.create(sender=sender, content=content)
-        return render(request, 'chat.html', {'user_message': user_message, 'form': form})
+        form = SendMessageForm(request.POST)
+        if form.is_valid():
+            # message = form.cleaned_data.get('content')
+            sender = "You"
+            content = request.POST.get('content')
+            timestamp = request.POST.get('timestamp')
+            # print("message: " + str(message))
+            print("sender: " + str(sender))
+            print("content: " + str(content))
+            print("timestamp: " + str(timestamp))
+        user_message = Message(sender=sender, content=content, timestamp=timestamp)
+        user_message.full_clean()
+        user_message.save()
+        all_user_messages = Message.objects.all()
+        form = SendMessageForm()
+        return render(request, 'chat.html', {'messages': all_user_messages, 'form': form})
     return redirect('chat') 
 
-def send_message(request):
-    print("send message")
-    if request.method == 'POST':
-        if request.user.is_authenticated:
-            current_user = "You"
-            form = SendMessageForm(request.POST)
-            if form.is_valid():
-                text = form.cleaned_data.get('text')
-                message = Message.objects.create(author=current_user, text=text)
-                return redirect('chat')
-            else:
-                return render(request, 'chat.html', {'messages':messages, 'form': form})
-        else:
-            return redirect('home')
-    else:
-        return HttpResponseForbidden()
-# def send_message(request):
-#     print("send_message")
-#     if request.method == 'POST':
-#         sender = request.POST.get('sender')
-#         content = request.POST.get('content')
-#         Message.objects.create(sender=sender, content=content)
-#     return redirect('chat')
 
+
+
+def new_chat(request):
+    Message.objects.all().delete()
+    response_data = Chat()
+    print(response_data.get_headers())
+    response_data.set_response()
+    status = response_data.get_response_status()
+    print("Status: " + str(status))
+    api_data = response_data.get_response_data()
+    messages = []
+    messages.append(api_data.get('question', {}).get('messages' , []))
+    text_content = [msg['text'] for sublist in messages for msg in sublist if msg.get('type') == 'text']
+    print(text_content)
+    for message in text_content:
+            digiDoc_message = Message(sender="DigiDoc", content=message, timestamp=None)
+            digiDoc_message.full_clean()
+            digiDoc_message.save()
+    if status == 200:
+        print(api_data)
+    else:
+        print(status)
+    if request.method == 'GET':
+        form = SendMessageForm()
+        print("GET")
+        all_messages = Message.objects.all()
+        return render(request, 'chat.html', {'messages': all_messages, 'form': form})
