@@ -1,6 +1,6 @@
 from django import forms
 from django.core.validators import RegexValidator
-from digidoc.models.message_models import Message, OnBoarding
+from digidoc.models.message_models import Message, OnBoarding, Symptom
 
 class SendMessageForm(forms.ModelForm):
     # message = forms.CharField(label="Message DigiDoc")
@@ -20,6 +20,9 @@ class OnBoardingForm(forms.ModelForm):
     
 
     gender = forms.ChoiceField(label='Gender:', choices = GENDER_CHOICES, widget = forms.RadioSelect())
+
+class SymptomForm(forms.Form):
+    symptoms = forms.ModelMultipleChoiceField(queryset=Symptom.objects.all(), widget=forms.CheckboxSelectMultiple)
 
 
 

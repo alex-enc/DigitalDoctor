@@ -25,5 +25,11 @@ class OnBoarding(models.Model):
     gender = models.CharField(max_length=6, choices=GENDER_CHOICES)
     birth_year = models.IntegerField(choices=get_birth_year_choices(), verbose_name=_("Birth Year"))
     initial_symptoms = models.CharField(max_length=1000)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+class Symptom(models.Model):
+    name = models.CharField(max_length=100)
+    def __str__(self):
+            return self.name
 
 
