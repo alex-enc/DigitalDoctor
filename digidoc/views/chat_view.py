@@ -198,13 +198,23 @@ def send_on_boarding(request):
         all_symptoms.append(api_response.get('question', {}).get('choices' , []))
         print("SYMPTOM CHOICES")
         print(all_symptoms)
-        symptoms = [symp['label'] for sublist in all_symptoms for symp in sublist if symp.get('type') == 'generic']
-        print("symptoms")
-        print(symptoms)
-        for symptom in symptoms:
-                user_symptom = Symptom(name=symptom)
-                user_symptom.full_clean()
-                user_symptom.save()
+        for sublist in all_symptoms:
+            for symptom_data in sublist:
+                # Extracts symptom id and label
+                symptom_id = symptom_data['id']
+                symptom_label = symptom_data['label']
+        
+                # Create Symptom object and save to database
+                symptom = Symptom(symptom_id=symptom_id, name=symptom_label)
+                symptom.full_clean()
+                symptom.save()
+        # symptoms = [symp['label'] for sublist in all_symptoms for symp in sublist if symp.get('type') == 'generic']
+        # print("symptoms")
+        # print(symptoms)
+        # for symptom in symptoms:
+        #         user_symptom = Symptom(name=symptom)
+        #         user_symptom.full_clean()
+        #         user_symptom.save()
         form = SymptomForm()
         return render(request, 'chat.html', {'messages': all_messages, 'form': form})
         # return redirect('chat')
@@ -270,21 +280,22 @@ def send_on_boarding(request):
 def send_symptom_confirmation(request):
     response_data = Chat()
     if request.method == 'POST': 
-        print("POST -- send_chat")        
+        print("POST -- send_symptom_confirmation")        
 
-        form = SendMessageForm(request.POST)
+        form = SymptomFormForm(request.POST)
         
         if form.is_valid():
             # message = form.cleaned_data.get('content')
-            sender = "You"
-            content = request.POST.get('content')
-            timestamp = request.POST.get('timestamp')
-            # print("message: " + str(message))
-            print("sender: " + str(sender))
-            print("content: " + str(content))
-            print("timestamp: " + str(timestamp))
+            # sender = "You"
+            # content = request.POST.get('content')
+            # timestamp = request.POST.get('timestamp')
+            # # print("message: " + str(message))
+            # print("sender: " + str(sender))
+            # print("content: " + str(content))
+            # print("timestamp: " + str(timestamp))
+            symptom = request.POST.get('name')
 
-        user_message = Message(sender=sender, content=content, timestamp=timestamp)
+        selected_symptom = Symptom(sender=sender, content=content, timestamp=timestamp)
         user_message.full_clean()
         user_message.save()
 
