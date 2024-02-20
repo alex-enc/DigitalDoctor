@@ -32,5 +32,5 @@ class Symptom(models.Model):
     def __str__(self):
             return self.name
     symptom_id = models.CharField(max_length=100)
-
+    conversation_id = models.CharField(max_length=100)
 

@@ -76,6 +76,23 @@ class Chat():
                 "other": True
             }
         }
+    
+    def set_symptom_confirmation_in_formatted_input(self, selected_symptoms_ids, conversation_id):
+        self.formatted_input = {
+            "answer": 
+                { 
+                    "type":
+                        "generic", 
+                        "input": { 
+                            "include": selected_symptoms_ids,
+                            "exclude": [] 
+                        }
+                },
+            "conversation": { 
+                "id": conversation_id
+            }
+ }
+
     def set_new_response(self):
         self.response = requests.post(self.url, json=self.formatted_input, headers=self.headers)
 
@@ -196,6 +213,9 @@ def send_on_boarding(request):
 
         all_symptoms = []
         all_symptoms.append(api_response.get('question', {}).get('choices' , []))
+        conversation_id = api_response.get('conversation', {}).get('id' , None)
+        print("convo id")
+        print(conversation_id)
         print("SYMPTOM CHOICES")
         print(all_symptoms)
         for sublist in all_symptoms:
@@ -203,9 +223,10 @@ def send_on_boarding(request):
                 # Extracts symptom id and label
                 symptom_id = symptom_data['id']
                 symptom_label = symptom_data['label']
+                symptom_conversation_id = conversation_id
         
                 # Create Symptom object and save to database
-                symptom = Symptom(symptom_id=symptom_id, name=symptom_label)
+                symptom = Symptom(symptom_id=symptom_id, name=symptom_label, conversation_id=symptom_conversation_id)
                 symptom.full_clean()
                 symptom.save()
         # symptoms = [symp['label'] for sublist in all_symptoms for symp in sublist if symp.get('type') == 'generic']
@@ -224,8 +245,67 @@ def send_on_boarding(request):
         # return response_data
         # return response.content
   
-           
-    
+
+def send_symptom_confirmation(request):
+    response_data = Chat()
+    if request.method == 'POST': 
+        print("POST -- send_symptom_confirmation")        
+
+        form = SymptomForm(request.POST)
+        selected_symptoms_ids = []
+        selected_symptoms_name = []
+        if form.is_valid():
+            selected_symptoms = form.cleaned_data['symptoms']
+            # Handle the selected symptoms data
+            for symptom in selected_symptoms:
+                # Do something with the selected symptom ID
+                print(f"Selected Symptom: {symptom}")
+                # Query the database to find the symsptom object with the given label
+                # 
+                selected_symptoms_name.append(symptom.name)
+                # Retrieves the symptom ID from the symptom object and append it to the list
+                selected_symptoms_ids.append(symptom.symptom_id)
+            print(str(selected_symptoms_ids))
+            conversation_id = Symptom.objects.get(symptom_id=selected_symptoms_ids[0]).conversation_id
+            print("convo id")
+            print(conversation_id)
+            print("selected_symptoms_name")
+            print(str(selected_symptoms_name))
+            content = "I confirm that I have the following symptom(s): " + str(selected_symptoms_name)
+            timestamp = request.POST.get('timestamp')
+            user_message = Message(sender="You", content=content, timestamp=timestamp)
+            user_message.full_clean()
+            user_message.save()
+
+        response_data.set_symptom_confirmation_in_formatted_input(selected_symptoms_ids, conversation_id)
+        
+        
+
+        response = requests.post(response_data.url, json=response_data.formatted_input, headers=response_data.headers)
+        print(response.json())
+        api_response = response.json()
+        all_messages = Message.objects.all()
+        return render(request, 'chat.html', {'messages': all_messages})
+    else:
+        form = SymptomForm()
+    return render(request, 'chat.html', {'form': form})
+
+
+        # selected_symptom = Symptom(sender=sender, content=content, timestamp=timestamp)
+        # user_message.full_clean()
+        # user_message.save()
+
+        # response_data.set_name_in_formatted_input(user_message.content)
+
+        # all_user_messages = Message.objects.all()
+        # form = SendMessageForm()
+        # response = requests.post(response_data.url, json=response_data.formatted_input, headers=response_data.headers)
+        # print(response.json())
+
+        # return render(request, 'next_page.html')
+        # return redirect('chat')
+
+
 
 # def get_chat(request):
 #     response_data = Chat()
@@ -273,44 +353,3 @@ def send_on_boarding(request):
 #     for message in all_messages:
 #         print(message.content)
 #     return render(request, 'chat.html', {'messages': all_messages, 'form': form, 'scenario': scenario})
-
-   
-
-
-def send_symptom_confirmation(request):
-    response_data = Chat()
-    if request.method == 'POST': 
-        print("POST -- send_symptom_confirmation")        
-
-        form = SymptomFormForm(request.POST)
-        
-        if form.is_valid():
-            # message = form.cleaned_data.get('content')
-            # sender = "You"
-            # content = request.POST.get('content')
-            # timestamp = request.POST.get('timestamp')
-            # # print("message: " + str(message))
-            # print("sender: " + str(sender))
-            # print("content: " + str(content))
-            # print("timestamp: " + str(timestamp))
-            symptom = request.POST.get('name')
-
-        selected_symptom = Symptom(sender=sender, content=content, timestamp=timestamp)
-        user_message.full_clean()
-        user_message.save()
-
-        # response_data.set_name_in_formatted_input(user_message.content)
-
-        all_user_messages = Message.objects.all()
-        form = SendMessageForm()
-        response = requests.post(response_data.url, json=response_data.formatted_input, headers=response_data.headers)
-        print(response.json())
-        if "error" in response:
-            _, expect_values = response.split('Expect:')
-            expect_values = expect_values.strip() 
-            api_message = Message(sender="DigiDoc", content=expect_values, timestamp=None)
-            api_message.full_clean()
-            api_message.save()
-        # return render(request, 'chat.html', {'messages': all_user_messages, 'form': form})
-        return redirect('chat')
-

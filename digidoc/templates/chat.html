@@ -79,7 +79,7 @@
         
     </div>
     
-    {% csrf_token %}
+    <!-- {% csrf_token %} -->
     <form action="{% url 'send_symptom_confirmation'%}" method="post">
         {% csrf_token %}
         {{ form }}           
