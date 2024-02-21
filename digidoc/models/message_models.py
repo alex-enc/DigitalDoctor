@@ -34,3 +34,11 @@ class Symptom(models.Model):
     symptom_id = models.CharField(max_length=100)
     conversation_id = models.CharField(max_length=100)
 
+class Choice(models.Model):
+    label = models.CharField(max_length=100)
+    # # is_selected = models.BooleanField(default=False)  # Represents whether the symptom is selected or not
+    choice_id = models.CharField(max_length=100)
+    conversation_id = models.CharField(max_length=100)
+    def __str__(self):
+        return self.label
+#     # pass

@@ -1,6 +1,6 @@
 from django import forms
 from django.core.validators import RegexValidator
-from digidoc.models.message_models import Message, OnBoarding, Symptom
+from digidoc.models.message_models import Message, OnBoarding, Symptom, Choice
 
 class SendMessageForm(forms.ModelForm):
     # message = forms.CharField(label="Message DigiDoc")
@@ -26,3 +26,11 @@ class SymptomForm(forms.Form):
 
 
 
+# class ChoiceForm(forms.ModelForm):
+#     class Meta:
+#         model = Choice
+#         fields = ['Options:']  # Only include the is_selected field in the form
+
+class ChoiceForm(forms.Form):
+    # pass
+    choices = forms.ModelChoiceField(queryset=Choice.objects.all(), widget=forms.RadioSelect())

@@ -2,8 +2,8 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 import requests
 import json
-from digidoc.models.message_models import Message, OnBoarding, Symptom
-from digidoc.forms.chat_forms import SendMessageForm, OnBoardingForm, SymptomForm
+from digidoc.models.message_models import Message, OnBoarding, Symptom, Choice
+from digidoc.forms.chat_forms import SendMessageForm, OnBoardingForm, SymptomForm, ChoiceForm
 from django.http import HttpResponse
 
 from digidoc.healthily_API.API_authentication import APIAuthenticate
@@ -103,7 +103,7 @@ def new_chat(request):
     Message.objects.all().delete()
     OnBoarding.objects.all().delete()
     Symptom.objects.all().delete()
-
+    Choice.objects.all().delete()
     response_data = Chat()
 
     print(response_data.get_headers())
@@ -238,16 +238,12 @@ def send_on_boarding(request):
         #         user_symptom.save()
         form = SymptomForm()
         return render(request, 'chat.html', {'messages': all_messages, 'form': form})
-        # return redirect('chat')
-        # return api_response
-        # return response
-        # response_data.set_new_response()
-        # return response_data
-        # return response.content
   
 
 def send_symptom_confirmation(request):
+    
     response_data = Chat()
+    Choice.objects.all().delete()
     if request.method == 'POST': 
         print("POST -- send_symptom_confirmation")        
 
@@ -278,14 +274,58 @@ def send_symptom_confirmation(request):
             user_message.save()
 
         response_data.set_symptom_confirmation_in_formatted_input(selected_symptoms_ids, conversation_id)
-        
-        
 
         response = requests.post(response_data.url, json=response_data.formatted_input, headers=response_data.headers)
         print(response.json())
         api_response = response.json()
+        # saves api response as messages
+        messages = []
+        messages.append(api_response.get('question', {}).get('messages' , []))
+        # Check if mandatory and multiple fields are true
+        # mandatory = api_response.get('question', {}).get('mandatory' , [])
+        # multiple = api_response.get('question', {}).get('multiple' , [])
+
+        # if mandatory and multiple:
+        #     print("mandatory: " + str(mandatory))
+        #     print("multiple: " + str(multiple))
+        # else:
+        #     print("FALSE")
+
+        print("MESSAGES")
+        print(messages)
+        text_content = [msg['value'] for sublist in messages for msg in sublist if msg.get('type') == 'generic']
+        print("text content")
+        print(text_content)
+        for message in text_content:
+                digiDoc_message = Message(sender="DigiDoc", content=message, timestamp=None)
+                digiDoc_message.full_clean()
+                digiDoc_message.save()
+
         all_messages = Message.objects.all()
-        return render(request, 'chat.html', {'messages': all_messages})
+        for message in all_messages:
+            print(message.content)
+
+        list_of_choices = []
+        list_of_choices.append(api_response.get('question', {}).get('choices' , []))
+
+        conversation_id = api_response.get('conversation', {}).get('id' , None)
+
+        print("CHOICES")
+        print(list_of_choices)
+        for sublist in list_of_choices:
+            for choice in sublist:
+                # Extracts symptom id and label
+                choice_id = choice['id']
+                choice_label = choice['label']
+                # selected = True
+                choice_conversation_id = conversation_id
+        
+                # Create Symptom object and save to database
+                chosen_option = Choice(choice_id=choice_id, label=choice_label, conversation_id=choice_conversation_id)
+                chosen_option.full_clean()
+                chosen_option.save()
+        form = ChoiceForm()
+        return render(request, 'chat2.html', {'messages': all_messages, 'form': form})
     else:
         form = SymptomForm()
     return render(request, 'chat.html', {'form': form})

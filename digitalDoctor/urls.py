@@ -24,5 +24,7 @@ urlpatterns = [
     path('send_symptom_confirmation/', chat_view.send_symptom_confirmation, name='send_symptom_confirmation'),
     path('new_chat/', chat_view.new_chat, name='new_chat'),
     path('on_boarding/', chat_view.send_on_boarding, name='on_boarding'),
+    path('chat_choices/', chat_view.send_on_boarding, name='chat_choices'),
+
 ]
 
