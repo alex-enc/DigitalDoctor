@@ -330,66 +330,184 @@ def send_symptom_confirmation(request):
         form = SymptomForm()
     return render(request, 'chat.html', {'form': form})
 
+def submit_choice(request):
+    response_data = Chat()
+    # Choice.objects.all().delete()
+    if request.method == 'POST': 
+        print("POST -- submit_choice")        
 
-        # selected_symptom = Symptom(sender=sender, content=content, timestamp=timestamp)
-        # user_message.full_clean()
-        # user_message.save()
+        form = ChoiceForm(request.POST)
+        selected_choice_id = []
+        selected_choice_label = []
+        if form.is_valid():
+            choice = form.cleaned_data['choices']
+            # Handle the selected symptoms data
+       
+            # Do something with the selected symptom ID
+            print(f"Selected choice: {choice}")
 
-        # response_data.set_name_in_formatted_input(user_message.content)
+            selected_choice_label.append(choice.label)
+            # Retrieves the choice ID from the choice object and append it to the list
+            selected_choice_id.append(choice.choice_id)
+            print(str(selected_choice_id))
+            conversation_id = Choice.objects.get(choice_id=selected_choice_id[0]).conversation_id
+            print("convo id")
+            print(conversation_id)
+            print("selected_choice_label")
+            print(str(selected_choice_label))
+            content = str(selected_choice_label)
+            timestamp = request.POST.get('timestamp')
+            user_message = Message(sender="You", content=content, timestamp=timestamp)
+            user_message.full_clean()
+            user_message.save()
 
-        # all_user_messages = Message.objects.all()
-        # form = SendMessageForm()
-        # response = requests.post(response_data.url, json=response_data.formatted_input, headers=response_data.headers)
-        # print(response.json())
+            response_data.set_symptom_confirmation_in_formatted_input(selected_choice_id, conversation_id)
 
-        # return render(request, 'next_page.html')
-        # return redirect('chat')
+            response = requests.post(response_data.url, json=response_data.formatted_input, headers=response_data.headers)
+            print(response.json())
+            api_response = response.json()
+        else:
+            print("NO")
+        # saves api response as messages
+        # messages = []
+        # messages.append(api_response.get('question', {}).get('messages' , []))
 
+        # Check if mandatory and multiple fields are true
+        # mandatory = api_response.get('question', {}).get('mandatory' , [])
+        # multiple = api_response.get('question', {}).get('multiple' , [])
 
+        # if mandatory and multiple:
+        #     print("mandatory: " + str(mandatory))
+        #     print("multiple: " + str(multiple))
+        # else:
+        #     print("FALSE")
 
-# def get_chat(request):
-#     response_data = Chat()
-#     api_data = response_data.get_response_data()
-#     scenario = api_data.get('conversation', {}).get('scenario' , [])
-#     print("scenario")
-#     print(scenario)
-#     all_messages = Message.objects.all()
-#     form = SendMessageForm()
-#     if request.method == 'POST':
-#         if scenario=="on_boarding":
-#             print("get_chat -- on_boarding")
-#             response = send_on_boarding(request)
-            
-#     elif request.method == 'GET':
-#         # form = SendMessageForm()
-#         print("GET--get_chat")
-#         # all_messages = Message.objects.all()
-#         response_data.set_response()
-#         status = response_data.get_response_status()
-#         print("Status: " + str(status))
-#     # if request.method == 'GET':
-#     #     form = SendMessageForm()
-#     #     print("GET--get_chat")
-#     #     # all_messages = Message.objects.all()
-#     #     response_data.set_response()
-#     #     status = response_data.get_response_status()
-#     #     print("Status: " + str(status))
+        # print("MESSAGES")
+        # print(messages)
+        # text_content = [msg['value'] for sublist in messages for msg in sublist if msg.get('type') == 'generic']
+        # print("text content")
+        # print(text_content)
+        # for message in text_content:
+        #         digiDoc_message = Message(sender="DigiDoc", content=message, timestamp=None)
+        #         digiDoc_message.full_clean()
+        #         digiDoc_message.save()
 
-#         api_data = response_data.get_response_data()
+        all_messages = Message.objects.all()
+        # for message in all_messages:
+        #     print(message.content)
 
+        # list_of_choices = []
+        # list_of_choices.append(api_response.get('question', {}).get('choices' , []))
 
+        # conversation_id = api_response.get('conversation', {}).get('id' , None)
 
-#     messages = []
-#     messages.append(api_data.get('question', {}).get('messages' , []))
+        # print("CHOICES")
+        # print(list_of_choices)
+        # for sublist in list_of_choices:
+        #     for choice in sublist:
+        #         # Extracts symptom id and label
+        #         choice_id = choice['id']
+        #         choice_label = choice['label']
+        #         # selected = True
+        #         choice_conversation_id = conversation_id
+        
+        #         # Create Symptom object and save to database
+        #         chosen_option = Choice(choice_id=choice_id, label=choice_label, conversation_id=choice_conversation_id)
+        #         chosen_option.full_clean()
+        #         chosen_option.save()
+        form = ChoiceForm()
+        return render(request, 'chat2.html', {'messages': all_messages, 'form': form})
+    else:
+        form = SymptomForm()
+    return render(request, 'chat.html', {'form': form})
 
-#     text_content = [msg['text'] for sublist in messages for msg in sublist if msg.get('type') == 'text']
-#     print("text content")
-#     print(text_content)
-#     for message in text_content:
-#             digiDoc_message = Message(sender="DigiDoc", content=message, timestamp=None)
-#             digiDoc_message.full_clean()
-#             digiDoc_message.save()
+def see_report(request):
+    response_data = Chat()
+    # Choice.objects.all().delete()
+    if request.method == 'POST': 
+        print("POST -- submit_choice")        
 
-#     for message in all_messages:
-#         print(message.content)
-#     return render(request, 'chat.html', {'messages': all_messages, 'form': form, 'scenario': scenario})
+        form = ChoiceForm(request.POST)
+        selected_choice_id = []
+        selected_choice_label = []
+        if form.is_valid():
+            choice = form.cleaned_data['choices']
+            # Handle the selected symptoms data
+       
+            # Do something with the selected symptom ID
+            print(f"Selected choice: {choice}")
+
+            selected_choice_label.append(choice.label)
+            # Retrieves the choice ID from the choice object and append it to the list
+            selected_choice_id.append(choice.choice_id)
+            print(str(selected_choice_id))
+            conversation_id = Choice.objects.get(choice_id=selected_choice_id[0]).conversation_id
+            print("convo id")
+            print(conversation_id)
+            print("selected_choice_label")
+            print(str(selected_choice_label))
+            content = str(selected_choice_label)
+            timestamp = request.POST.get('timestamp')
+            user_message = Message(sender="You", content=content, timestamp=timestamp)
+            user_message.full_clean()
+            user_message.save()
+
+            response_data.set_symptom_confirmation_in_formatted_input(selected_choice_id, conversation_id)
+
+            response = requests.post(response_data.url, json=response_data.formatted_input, headers=response_data.headers)
+            print(response.json())
+            api_response = response.json()
+        else:
+            print("NO")
+        # saves api response as messages
+        # messages = []
+        # messages.append(api_response.get('question', {}).get('messages' , []))
+
+        # Check if mandatory and multiple fields are true
+        # mandatory = api_response.get('question', {}).get('mandatory' , [])
+        # multiple = api_response.get('question', {}).get('multiple' , [])
+
+        # if mandatory and multiple:
+        #     print("mandatory: " + str(mandatory))
+        #     print("multiple: " + str(multiple))
+        # else:
+        #     print("FALSE")
+
+        # print("MESSAGES")
+        # print(messages)
+        # text_content = [msg['value'] for sublist in messages for msg in sublist if msg.get('type') == 'generic']
+        # print("text content")
+        # print(text_content)
+        # for message in text_content:
+        #         digiDoc_message = Message(sender="DigiDoc", content=message, timestamp=None)
+        #         digiDoc_message.full_clean()
+        #         digiDoc_message.save()
+
+        all_messages = Message.objects.all()
+        # for message in all_messages:
+        #     print(message.content)
+
+        # list_of_choices = []
+        # list_of_choices.append(api_response.get('question', {}).get('choices' , []))
+
+        # conversation_id = api_response.get('conversation', {}).get('id' , None)
+
+        # print("CHOICES")
+        # print(list_of_choices)
+        # for sublist in list_of_choices:
+        #     for choice in sublist:
+        #         # Extracts symptom id and label
+        #         choice_id = choice['id']
+        #         choice_label = choice['label']
+        #         # selected = True
+        #         choice_conversation_id = conversation_id
+        
+        #         # Create Symptom object and save to database
+        #         chosen_option = Choice(choice_id=choice_id, label=choice_label, conversation_id=choice_conversation_id)
+        #         chosen_option.full_clean()
+        #         chosen_option.save()
+        form = ChoiceForm()
+        return render(request, 'chat2.html', {'messages': all_messages, 'form': form})
+    else:
+        form = SymptomForm()
+    return render(request, 'chat.html', {'form': form})
