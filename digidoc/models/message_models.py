@@ -27,18 +27,24 @@ class OnBoarding(models.Model):
     initial_symptoms = models.CharField(max_length=1000)
     timestamp = models.DateTimeField(auto_now_add=True)
 
-class Symptom(models.Model):
+class MultipleChoice(models.Model):
     name = models.CharField(max_length=100)
     def __str__(self):
             return self.name
-    symptom_id = models.CharField(max_length=100)
+    choice_id = models.CharField(max_length=100)
     conversation_id = models.CharField(max_length=100)
 
-class Choice(models.Model):
+class SingleChoice(models.Model):
     label = models.CharField(max_length=100)
     # # is_selected = models.BooleanField(default=False)  # Represents whether the symptom is selected or not
     choice_id = models.CharField(max_length=100)
     conversation_id = models.CharField(max_length=100)
     def __str__(self):
         return self.label
-#     # pass
+
+# class Condition(models.Model):
+#     name = models.CharField(max_length=100)
+#     def __str__(self):
+#             return self.name
+#     condition_id = models.CharField(max_length=100)
+#     conversation_id = models.CharField(max_length=100)

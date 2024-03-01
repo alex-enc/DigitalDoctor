@@ -61,14 +61,20 @@
             {% if messages %}
                 {% for message in messages %}
                     {% if message.sender == "DigiDoc" %}
+                      
                         <div class="api-message-bubble d-inline-block">
                             <p>{{ message.content }}</p>
                         </div>
+                       
+
                         <br>
                     {% else %}
-                        <div class="user-message-bubble d-inline-block">
+                        
+                        <div class="user-message-bubble" style="text-align: right;">
                             <p>{{ message.content }}</p>
                         </div>
+                       
+
                         <br>
                     {% endif %}
                 {% endfor %}

@@ -2,8 +2,8 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 import requests
 import json
-from digidoc.models.message_models import Message, OnBoarding, Symptom, Choice
-from digidoc.forms.chat_forms import SendMessageForm, OnBoardingForm, SymptomForm, ChoiceForm
+from digidoc.models.message_models import Message, OnBoarding
+from digidoc.forms.chat_forms import SendMessageForm, OnBoardingForm
 from django.http import HttpResponse, QueryDict
 from django.contrib.sessions.models import Session
 
@@ -109,6 +109,46 @@ def save_user_message(content, timestamp):
     user_message = Message(sender="You", content=content, timestamp=timestamp)
     user_message.full_clean()
     user_message.save()
+
+def save_symptoms(api_response):
+    all_symptoms=[]
+    all_symptoms.append(api_response.get('question', {}).get('choices' , []))
+    conversation_id = api_response.get('conversation', {}).get('id' , None)
+    print("convo id")
+    print(conversation_id)
+    print("SYMPTOM CHOICES")
+    print(all_symptoms)
+    for sublist in all_symptoms:
+        for symptom_data in sublist:
+            # Extracts symptom id and label
+            symptom_id = symptom_data['id']
+            symptom_label = symptom_data['label']
+            symptom_conversation_id = conversation_id
+    
+            # Create Symptom object and save to database
+            symptom = Symptom(symptom_id=symptom_id, name=symptom_label, conversation_id=symptom_conversation_id)
+            symptom.full_clean()
+            symptom.save()
+
+def save_conditions(api_response):
+    all_conditions=[]
+    all_conditions.append(api_response.get('question', {}).get('choices' , []))
+    conversation_id = api_response.get('conversation', {}).get('id' , None)
+    print("convo id")
+    print(conversation_id)
+    print("HEALTH BACKGROUND CHOICES")
+    print(all_conditions)
+    for sublist in all_conditions:
+        for health_condition_data in sublist:
+            # Extracts symptom id and label
+            condition_id = health_condition_data['id']
+            condition_long_name = health_condition_data['long_name']
+            condition_conversation_id = conversation_id
+    
+            # Create Symptom object and save to database
+            condition = Condition(condition_id=condition_id, name=condition_long_name, conversation_id=condition_conversation_id)
+            condition.full_clean()
+            condition.save()
 
 def new_chat(request):
     print("NEW CHAT")
@@ -222,24 +262,8 @@ def send_on_boarding(request):
         for message in all_messages:
             print(message.content)
 
-        all_symptoms = []
-        all_symptoms.append(api_response.get('question', {}).get('choices' , []))
-        conversation_id = api_response.get('conversation', {}).get('id' , None)
-        print("convo id")
-        print(conversation_id)
-        print("SYMPTOM CHOICES")
-        print(all_symptoms)
-        for sublist in all_symptoms:
-            for symptom_data in sublist:
-                # Extracts symptom id and label
-                symptom_id = symptom_data['id']
-                symptom_label = symptom_data['label']
-                symptom_conversation_id = conversation_id
-        
-                # Create Symptom object and save to database
-                symptom = Symptom(symptom_id=symptom_id, name=symptom_label, conversation_id=symptom_conversation_id)
-                symptom.full_clean()
-                symptom.save()
+        save_symptoms(api_response)
+ 
  
         form = SymptomForm()
         return render(request, 'chat.html', {'messages': all_messages, 'form': form})
@@ -259,10 +283,9 @@ def send_symptom_confirmation(request):
             selected_symptoms = form.cleaned_data['symptoms']
             # Handle the selected symptoms data
             for symptom in selected_symptoms:
-                # Do something with the selected symptom ID
+          
                 print(f"Selected Symptom: {symptom}")
-                # Query the database to find the symsptom object with the given label
-                # 
+    
                 selected_symptoms_name.append(symptom.name)
                 # Retrieves the symptom ID from the symptom object and append it to the list
                 selected_symptoms_ids.append(symptom.symptom_id)
@@ -275,9 +298,7 @@ def send_symptom_confirmation(request):
             content = "I confirm that I have the following symptom(s): " + str(selected_symptoms_name)
             timestamp = request.POST.get('timestamp')
             save_user_message(content, timestamp)
-            # user_message = Message(sender="You", content=content, timestamp=timestamp)
-            # user_message.full_clean()
-            # user_message.save()
+
 
         response_data.set_symptom_confirmation_in_formatted_input(selected_symptoms_ids, conversation_id)
 
@@ -372,15 +393,80 @@ def submit_choice(request):
         messages = []
         messages.append(api_response.get('question', {}).get('messages' , []))
 
-        # Check if mandatory and multiple fields are true
-        # mandatory = api_response.get('question', {}).get('mandatory' , [])
-        # multiple = api_response.get('question', {}).get('multiple' , [])
+        print("MESSAGES")
+        print(messages)
+        text_content = [msg['value'] for sublist in messages for msg in sublist if msg.get('type') == 'generic']
+        print("text content")
+        print(text_content)
+        save_digidoc_message(text_content)
 
-        # if mandatory and multiple:
-        #     print("mandatory: " + str(mandatory))
-        #     print("multiple: " + str(multiple))
-        # else:
-        #     print("FALSE")
+        all_messages = Message.objects.all()
+
+        phase_value = api_response['conversation']['phase']
+        print("phase")
+        print(phase_value)
+        if (phase_value=='info_result'):
+                form = ChoiceForm()
+                # Accessing the articles
+                articles = api_response['report']['articles']
+                request.session['articles'] = json.dumps(articles)
+                return render(request, 'end_of_chat.html', {'messages': all_messages, 'form': form})
+        elif (phase_value=='clarify'):
+            Symptom.objects.all().delete()
+            save_symptoms(api_response)
+            form = SymptomForm()
+            return render(request, 'chat.html', {'messages': all_messages,'form': form})
+        elif (phase_value=='health_background'):
+            Condition.objects.all().delete()
+            save_conditions(api_response)
+            form = ConditionForm()
+            return render(request, 'health_background_chat.html', {'messages': all_messages,'form': form})
+        else:
+            pass
+    else:
+        form = SymptomForm()
+    return render(request, 'chat.html', {'form': form})
+
+def send_condition(request):
+    
+    response_data = Chat()
+    Choice.objects.all().delete()
+    if request.method == 'POST': 
+        print("POST -- send_condition")        
+
+        form = ConditionForm(request.POST)
+        selected_condition_ids = []
+        selected_condition_name = []
+        if form.is_valid():
+            selected_conditions = form.cleaned_data['conditions']
+            # Handle the selected condition data
+            for condition in selected_conditions:
+          
+                print(f"Selected condition: {condition}")
+    
+                selected_condition_name.append(condition.name)
+                # Retrieves the symptom ID from the symptom object and append it to the list
+                selected_condition_ids.append(condition.condition_id)
+            print(str(selected_condition_ids))
+            conversation_id = Condition.objects.get(condition_id=selected_condition_ids[0]).conversation_id
+            print("convo id")
+            print(conversation_id)
+            print("selected_condition_name")
+            print(str(selected_condition_name))
+            content = "I confirm that I have the following condition(s): " + str(selected_condition_name)
+            timestamp = request.POST.get('timestamp')
+            save_user_message(content, timestamp)
+
+
+        response_data.set_symptom_confirmation_in_formatted_input(selected_condition_ids, conversation_id)
+
+        response = requests.post(response_data.url, json=response_data.formatted_input, headers=response_data.headers)
+        print(response.json())
+        api_response = response.json()
+        # saves api response as messages
+        messages = []
+        messages.append(api_response.get('question', {}).get('messages' , []))
+
 
         print("MESSAGES")
         print(messages)
@@ -390,36 +476,32 @@ def submit_choice(request):
         save_digidoc_message(text_content)
 
         all_messages = Message.objects.all()
-        # for message in all_messages:
-        #     print(message.content)
+        for message in all_messages:
+            print(message.content)
 
-        # list_of_choices = []
-        # list_of_choices.append(api_response.get('question', {}).get('choices' , []))
+        list_of_choices = []
+        list_of_choices.append(api_response.get('question', {}).get('choices' , []))
 
-        # conversation_id = api_response.get('conversation', {}).get('id' , None)
+        conversation_id = api_response.get('conversation', {}).get('id' , None)
 
-        # print("CHOICES")
-        # print(list_of_choices)
-        # for sublist in list_of_choices:
-        #     for choice in sublist:
-        #         # Extracts symptom id and label
-        #         choice_id = choice['id']
-        #         choice_label = choice['label']
-        #         # selected = True
-        #         choice_conversation_id = conversation_id
+        print("CHOICES")
+        print(list_of_choices)
+        for sublist in list_of_choices:
+            for choice in sublist:
+                # Extracts symptom id and label
+                choice_id = choice['id']
+                choice_label = choice['text']
+                # selected = True
+                choice_conversation_id = conversation_id
         
-        #         # Create Symptom object and save to database
-        #         chosen_option = Choice(choice_id=choice_id, label=choice_label, conversation_id=choice_conversation_id)
-        #         chosen_option.full_clean()
-        #         chosen_option.save()
-        if 'report' in api_response:
-            form = ChoiceForm()
-            # Accessing the articles
-            articles = api_response['report']['articles']
-            request.session['articles'] = json.dumps(articles)
-            return render(request, 'end_of_chat.html', {'messages': all_messages, 'form': form})
+                # Create Symptom object and save to database
+                chosen_option = Choice(choice_id=choice_id, label=choice_label, conversation_id=choice_conversation_id)
+                chosen_option.full_clean()
+                chosen_option.save()
+            form = ConditionForm()
+        return render(request, 'chat.html', {'messages': all_messages, 'form': form})
     else:
-        form = SymptomForm()
+        form = ConditionFormForm()
     return render(request, 'chat.html', {'form': form})
 
 def see_articles(request):
