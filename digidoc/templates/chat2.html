@@ -87,11 +87,28 @@
     </div>
     
     <!-- {% csrf_token %} -->
-    <form action="{% url 'chat_choices'%}" method="post">
+    <form action="{% url 'add_symptom'%}" method="post">
         {% csrf_token %}
-        {{ form }}           
+        {{ form1 }}  
+        {% for symptom in symptoms %}
+            <p>{{symptom.symptom_name}}</p>
+        {% endfor %}
+     
+        {% if symptoms_count == 0 %}
+            {% for option in choices %}
+                {% if option.choice_id == 'cant_find_symptoms' %}
+                <input type="button" id="{{ option.label }}" name="choice" value="{{ option.label }}">
+                {% endif %}
+            {% endfor %}
+        {% else %}
+            {% for option in choices %}
+                {% if option.choice_id == 'empty_id_autocomplete' %}
+                    <input type="button" id="{{ option.label }}" name="choice" value="{{ option.label }}">
+                {% endif %}
+            {% endfor %}
+        {% endif %}
         <br />
-        <input type="submit" value="Next">
+        <input type="submit" value="Add" class="btn btn-outline-primary">
     </form>
    
 

@@ -20,12 +20,17 @@ from digidoc.views import chat_view, home_view
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', home_view.home, name='home'),
-    # path('chat/', chat_view.get_chat, name='chat'),
+    path('chat/', chat_view.main_chat, name='main_chat'),
     path('send_symptom_confirmation/', chat_view.send_symptom_confirmation, name='send_symptom_confirmation'),
     path('new_chat/', chat_view.new_chat, name='new_chat'),
+    path('add_symptom/', chat_view.add_symptom, name='add_symptom'),
+    # path('show_symptoms/', chat_view.show_symptoms, name='show_symptoms'),
     path('on_boarding/', chat_view.send_on_boarding, name='on_boarding'),
     path('chat_choices/', chat_view.submit_choice, name='chat_choices'),
     path('health_conditions/', chat_view.send_condition, name='send_health_conditions'),
+    path('send_next/', chat_view.send_next, name='send_next'),
+    path('send_next2/', chat_view.send_next2, name='send_next2'),
+    path('thank_you/', chat_view.thank_you, name='thank_you'),
     path('articles/', chat_view.see_articles, name='articles')
 
 ]

@@ -42,6 +42,15 @@ class SingleChoice(models.Model):
     def __str__(self):
         return self.label
 
+class APIResponse(models.Model):
+    phase = models.CharField(max_length=100)
+    question_type = models.CharField(max_length=100)
+
+class TextInput(models.Model):
+    symptom_name = models.CharField(max_length=1000)
+    def __str__(self):
+        return self.name
+
 # class Condition(models.Model):
 #     name = models.CharField(max_length=100)
 #     def __str__(self):
