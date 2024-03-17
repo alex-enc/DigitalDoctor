@@ -94,21 +94,16 @@
             <p>{{symptom.symptom_name}}</p>
         {% endfor %}
      
-        {% if symptoms_count == 0 %}
-            {% for option in choices %}
-                {% if option.choice_id == 'cant_find_symptoms' %}
-                <input type="button" id="{{ option.label }}" name="choice" value="{{ option.label }}">
-                {% endif %}
-            {% endfor %}
-        {% else %}
-            {% for option in choices %}
-                {% if option.choice_id == 'empty_id_autocomplete' %}
-                    <input type="button" id="{{ option.label }}" name="choice" value="{{ option.label }}">
-                {% endif %}
-            {% endfor %}
-        {% endif %}
         <br />
         <input type="submit" value="Add" class="btn btn-outline-primary">
+    </form>
+
+    <form action="{% url 'main_chat'%}" method="post">
+        {% csrf_token %}
+
+        {{form2}}
+        <br />
+        <input type="submit" value="Next" class="btn btn-outline-primary">
     </form>
    
 

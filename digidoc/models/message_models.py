@@ -49,8 +49,12 @@ class APIResponse(models.Model):
 class TextInput(models.Model):
     symptom_name = models.CharField(max_length=1000)
     def __str__(self):
-        return self.name
+        return self.symptom_name
 
+class HealthBackground(models.Model):
+    condition_id = models.CharField(max_length=1000)
+    def __str__(self):
+        return self.condition_id
 # class Condition(models.Model):
 #     name = models.CharField(max_length=100)
 #     def __str__(self):

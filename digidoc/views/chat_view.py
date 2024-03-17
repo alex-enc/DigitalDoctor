@@ -2,11 +2,12 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 import requests
 import json
-from digidoc.models.message_models import Message, OnBoarding, MultipleChoice, SingleChoice, APIResponse, TextInput
+from digidoc.models.message_models import Message, OnBoarding, MultipleChoice, SingleChoice, APIResponse, TextInput, HealthBackground
 from digidoc.forms.chat_forms import SendMessageForm, OnBoardingForm, MultipleChoiceForm, SingleChoiceForm, TextInputForm
 from django.http import HttpResponse, QueryDict
 from django.contrib.sessions.models import Session
 from django.http import HttpResponseNotFound
+from datetime import datetime
 
 from digidoc.healthily_API.API_authentication import APIAuthenticate
 class Chat():
@@ -195,6 +196,7 @@ def delete_database():
     SingleChoice.objects.all().delete()
     APIResponse.objects.all().delete()
     TextInput.objects.all().delete()
+    HealthBackground.objects.all().delete()
 
 
 def get_phase_from_api_response(api_response):
@@ -304,7 +306,7 @@ def main_chat(request):
             return submit_choice(request)
         elif previous_phase == 'autocomplete_add':
             print("previous_phase -- autocomplete_add") 
-            # return add_more_symptoms(request)
+            return submit_choice(request)
         elif previous_phase == 'clarify': 
             print("previous_phase -- clarify") 
             return send_symptom_confirmation(request) 
@@ -657,6 +659,8 @@ def add_symptom(request):
     form2 = SingleChoiceForm()
     choices = SingleChoice.objects.all()
     if symptoms_count >= 3:
+        choice_id = 'empty_id_autocomplete'
+        form2 = SingleChoiceForm(initial=choice_id)
         return render(request, 'chat2.html', {'form2': form2, 'symptoms':symptoms,'symptoms_count': symptoms_count, 'choices':choices})
     if request.method == 'POST':
         form = TextInputForm(request.POST)
@@ -667,11 +671,19 @@ def add_symptom(request):
             symptoms_count = TextInput.objects.count()
             print("COUNT")
             print(symptoms_count)
-            return render(request, 'chat2.html', {'form1': form1, 'symptoms':symptoms, 'symptoms_count': symptoms_count, 'choices': choices})
+            if symptoms_count == 0:
+                choice_id = 'cant_find_symptoms'
+                form2 = SingleChoiceForm(initial={'choice_id': choice_id})
+            else:
+                choice_id = 'empty_id_autocomplete'
+                form2 = SingleChoiceForm(initial={'choice_id': choice_id})
+            return render(request, 'chat2.html', {'form1': form1, 'form2':form2, 'symptoms':symptoms, 'symptoms_count': symptoms_count, 'choices': choices})
     else:
         form1 = TextInputForm()
-    
-    return render(request, 'chat2.html', {'form1': form1, 'symptoms':symptom, 'symptoms_count': symptoms_count, 'choices':choices})
+        form2 = form2 = SingleChoiceForm()
+    return render(request, 'chat2.html', {'form1': form1, 'form2':form2, 'symptoms':symptom, 'symptoms_count': symptoms_count, 'choices':choices})
+
+# def skip(request):
 
 # def show_symptoms(request):
 #     symptoms = TextInput.objects.all()
@@ -773,7 +785,11 @@ def send_condition(request):
                 selected_condition_name.append(condition.name)
                 # Retrieves the symptom ID from the symptom object and append it to the list
                 selected_condition_ids.append(condition.choice_id)
+                health_background = HealthBackground(condition_id = condition.choice_id)
+                health_background.full_clean()
+                health_background.save()
             print(str(selected_condition_ids))
+
             conversation_id = MultipleChoice.objects.get(choice_id=selected_condition_ids[0]).conversation_id
             print("convo id")
             print(conversation_id)
@@ -1229,16 +1245,38 @@ def send_final(request):
         possible_conditions = api_response['report']['summary']['articles_v3']
         print("POSSIBLE CONDITIONS")
         print(possible_conditions)
-        # advice = api_response['report']['summary']['articles_v3']['content']['triage']['triage_advice']
-        # print(advice)
-        # advice_diagnostic = api_response['report']['summary']['articles_v3']['content']['triage']['triage_diagnostic']
-        # print(advice_diagnostic)
+
         metadata = api_response['report']['summary']['articles_v3'][0]['metadata']
         triage_worries = api_response['report']['summary']['articles_v3'][0]['content']['triage']['triage_worries']
         # Replace newline characters with <br> tags
         triage_worries_html = triage_worries.replace('\n', '<br>')
         influencing_factors = api_response['report']['summary']['influencing_factors']
         user_profile = api_response['report']['summary']['user_profile']
+        duration = api_response['report']['summary']['duration']
+        extracted_symptoms =api_response['report']['summary']['extracted_symptoms']
+        additional_symptoms = api_response['report']['summary']['additional_symptoms']
+        negative_symptoms = api_response['report']['summary']['negative_symptoms']
+        unsure_symptoms = api_response['report']['summary']['unsure_symptoms']
+        user_profile = api_response['report']['summary']['user_profile']
+        
+        timestamp = datetime.now()
+
+        health_background_conditions_list = []
+        condition_ids = list(HealthBackground.objects.values_list('condition_id', flat=True))
+        print("condition_ids")
+        print(condition_ids)
+        for factor in influencing_factors:
+            health_background_conditions = {}
+            print("factor")
+            print(factor)
+            if factor['cui'] in condition_ids:
+                health_background_conditions["name"] = factor['long_name']          
+                health_background_conditions["patient_has_condition"] = "Yes"
+            else:
+                health_background_conditions["name"] = factor['long_name']
+                health_background_conditions["patient_has_condition"] = "No"
+            health_background_conditions_list.append(health_background_conditions)
+        print(health_background_conditions_list)
 
         # check the type of message
         message_type = api_response.get('question', {}).get('type' , [])
@@ -1271,8 +1309,26 @@ def send_final(request):
                 chosen_option = SingleChoice(choice_id=choice_id, label=choice_label, conversation_id=choice_conversation_id)
                 chosen_option.full_clean()
                 chosen_option.save()
-        return render(request, html, {'text_content': text_content, 'form':form, 'consultation_triage': consultation_triage, 'possible_conditions': possible_conditions, 'metadata':metadata, 'triage_worries': triage_worries_html, 'influencing_factors': influencing_factors, 'user_profile': user_profile})
+        context = {
+                'text_content': text_content, 
+                'form':form, 
+                'consultation_triage': consultation_triage, 
+                'possible_conditions': possible_conditions, 
+                'metadata':metadata, 
+                'triage_worries': triage_worries_html, 
+                'influencing_factors': influencing_factors, 
+                'user_profile': user_profile,
+                'duration': duration,
+                'extracted_symptoms': extracted_symptoms,
+                'additional_symptoms': additional_symptoms,
+                'negative_symptoms': negative_symptoms,
+                'unsure_symptoms': unsure_symptoms,
+                'user_profile': user_profile,
+                'health_background_conditions': health_background_conditions_list,
+                'timestamp': timestamp
+        }
 
+        return render(request, html, context)
 def send_final_continue(request):
     print("POST -- send_final_continue")
     response_data = Chat()

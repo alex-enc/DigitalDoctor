@@ -54,56 +54,176 @@
         </div>
     </nav>
 
-    <h1>Report Summary</h1>
+    <h1>Your Report</h1>
+    <h6>{{timestamp}}</h6>
     <div>
-        <h1>Triage: {{ consultation_triage.triage }}</h1>
-        <p>Triage Advice: {{ consultation_triage.triage_advice|safe }}</p>
-        <p>Level: {{ consultation_triage.level }}</p>
-    </div>
-    <div>
-        {% for condition in possible_conditions %}
-        <div>
-            <h3>Condition: {{ condition.content.medical_name }}</h1>
-            <h6>{{ condition.content.snippet}}</h6>
-            <p>Advice: </p>
-            <p>Diagnostic: {{ condition.content.triage.triage_diagnostic|safe }}</p>
-            <p>Treatment: {{ condition.content.triage.triage_treatment|safe }}</p>
-            <p>Worries: {{ triage_worries|safe }}</p>
-            <p>{{ condition.content.triage.triage_message }}</p>
-            
-            <p>Reading Time: {{ metadata.reading_time_minutes }} minutes</p>
-            <p><a href="{{ condition.urls.web }}">Read more on web</a></p>
-            <p><a href="{{ condition.urls.mobile }}">Read more on mobile</a></p>
+        <div class="col d-flex justify-content-center">
+            {% if consultation_triage.level == 'urgent_48h_condition' %}
+                <div class="card bg-danger">
+                    <div class="card-body" style="width: 100rem;"> 
+                            <h5 class="card-title">Urgent</h5>
+                            <p class="card-text">{{ consultation_triage.triage_advice|safe }}</p>
+                    </div>
+                </div>
+            {% else %}
+            <div class="card bg-info">
+                <div class="card-body" style="width: 100rem;"> 
+                        <h5 class="card-title">Other</h5>
+                        <p class="card-text">{{ consultation_triage.triage_advice|safe }}</p>
+                </div>
+            </div>
+            {% endif %}
         </div>
-
-        {% endfor %}
-
     </div>
     <div>
-        <h3>Influencing factors:</h3>
-        {% for factor in influencing_factors|dictsort:'rank' %}
-            <div>
-                <h4>{{factor.rank}}. {{factor.long_name}}</h4>
+        <h2>Summary</h2>
+        <h3>Possible Causes</h3>
+        <div class="col d-flex justify-content-center">
+            {% for condition in possible_conditions %}
+                <button type="button" class="btn" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
+                    <div class="card">
+                        <div class="card-body" style="width: 100rem;" data-bs-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample">
+                            <h5 class="card-title">{{ condition.content.medical_name }} - {{ condition.content.name }}</h5>
+                            <h6 class="card-text">{{ condition.content.triage.triage_message }}</h6>
+                            <p>{{ condition.content.snippet}}</p>
+                        </div>
+                    </div>
+                </button>
+                                <!-- Modal -->
+                <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                            <h1 class="modal-title fs-5" id="staticBackdropLabel">{{ condition.content.medical_name }}</h1>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <p>{{ condition.content.snippet}}</p>
+                                <div class="accordion accordion-flush" id="accordionFlushExample">
+                                    <div class="accordion-item">
+                                        <h2 class="accordion-header">
+                                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseOne" aria-expanded="false" aria-controls="flush-collapseOne">
+                                                How is it assessed?
+                                            </button>
+                                        </h2>
+                                        <div id="flush-collapseOne" class="accordion-collapse collapse" data-bs-parent="#accordionFlushExample">
+                                            <div class="accordion-body">{{ condition.content.triage.triage_diagnostic|safe }}</div>
+                                        </div>
+                                    </div>
+                                    <div class="accordion-item">
+                                        <h2 class="accordion-header">
+                                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseTwo" aria-expanded="false" aria-controls="flush-collapseTwo">
+                                                How is it treated?
+                                            </button>
+                                        </h2>
+                                        <div id="flush-collapseTwo" class="accordion-collapse collapse" data-bs-parent="#accordionFlushExample">
+                                            <div class="accordion-body">{{ condition.content.triage.triage_treatment|safe }}                           
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="accordion-item">
+                                        <h2 class="accordion-header">
+                                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseThree" aria-expanded="false" aria-controls="flush-collapseThree">
+                                                When to take action?
+                                            </button>
+                                        </h2>
+                                        <div id="flush-collapseThree" class="accordion-collapse collapse" data-bs-parent="#accordionFlushExample">
+                                            <div class="accordion-body">{{ triage_worries|safe }}
+        
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="accordion-item">
+                                        <h2 class="accordion-header">
+                                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseFour" aria-expanded="false" aria-controls="flush-collapseFour">
+                                                Read More
+                                            </button>
+                                        </h2>
+                                        <div id="flush-collapseFour" class="accordion-collapse collapse" data-bs-parent="#accordionFlushExample">
+                                            <div class="accordion-body">
+                                                <a href="{{ condition.urls.web }}">{{ condition.content.name }}</a>
+                                                <p>Reading Time: {{ metadata.reading_time_minutes }} minutes</p>
+                                            </div>  
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
             </div>
         {% endfor %}
     </div>
-    <div>
-        <p>User profile:</p>
-        <p>Year of Birth: {{user_profile.year_of_birth}} | Gender: {{user_profile.gender}}</p>
+
+        
+
     </div>
+    <div>
+        <div class="col d-flex justify-content-center">
+            <div class="card">
+                <div class="card-body" style="width: 100rem;">
+                    <div class="accordion accordion-flush" id="accordionFlushExample">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseFive" aria-expanded="false" aria-controls="flush-collapseFive">
+                                    What you told us:
+                                </button>
+                            </h2>
+                            <div id="flush-collapseFive" class="accordion-collapse collapse" data-bs-parent="#accordionFlushExample">
+                                <div class="accordion-body">
+                                    <h5>Patient Info:</h5>
+                                    <li>Year of Birth: {{user_profile.year_of_birth}}</li>
+                                    <li>{{user_profile.gender}}</li>
+                                    <br>
+                                    <h5>Duration of symptoms:</h5>
+                                    <p>{{duration}}</p>
+                                    <br>
+                                    <h5>Reported symptoms:</h5>
+                                    {% for symptom in extracted_symptoms %}
+                                        <li>{{symptom.name}}</li>
+                                    {% endfor %}
+                                    {% for symptom in additional_symptoms %}
+                                        <li>{{symptom.name}}</li>
+                                    {% endfor %}
+                                    <br>
+                                    {% if unsure_symptoms %}
+                                        <h5>Unsure symptoms:</h5>     
+                                        {% for symptom in unsure_symptoms %}                       
+                                            <li>{{symptom.name}}</li>
+                                        {% endfor %}
+                                    {% else %}
+                                        <br>
+                                    {% endif %}
+                                    <h5>You said you have not experienced:</h5>
+                                    {% for symptom in negative_symptoms %}
+                                        <li>{{symptom.name}}</li>
+                                    {% endfor %}
+                                    <br>
+                                    <h5>Health Background:</h5>
+                                    {% for condition in health_background_conditions %}
+                                        <li>{{condition.name}} - {{condition.patient_has_condition}}</li>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
     <div class="mt-3 ms-2">
 
         {% for message in text_content %}
             <div>
                 <p>{{ message }}</p>
             </div>
-        
-
             <br>
         {%endfor%}
-     
 
-    
     </div>
     <form action="{% url 'main_chat'%}" method="post">
         {% csrf_token %}
