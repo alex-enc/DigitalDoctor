@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 import requests
 import json
-from digidoc.models.message_models import Message, OnBoarding, MultipleChoice, SingleChoice, APIResponse, TextInput, HealthBackground
+from digidoc.models.message_models import Message, OnBoarding, MultipleChoice, SingleChoice, APIResponse, TextInput, HealthBackground, ConversationId
 from digidoc.forms.chat_forms import SendMessageForm, OnBoardingForm, MultipleChoiceForm, SingleChoiceForm, TextInputForm
 from django.http import HttpResponse, QueryDict
 from django.contrib.sessions.models import Session
@@ -132,6 +132,26 @@ class Chat():
     def set_new_response(self):
         self.response = requests.post(self.url, json=self.formatted_input, headers=self.headers)
 
+    def autocomplete_request(self,symptom):
+        params = {
+            'text': symptom,
+        }
+
+        response = requests.get('https://portal.your.md/v4/search/symptoms', params=params, headers=self.headers)
+        return response.json()
+
+    def set_autocomplete_post(self, selected_symptoms_ids, conversation_id):
+        self.formatted_input = {
+            "answer": { 
+                "type": "autocomplete", 
+                "selection":  selected_symptoms_ids   
+            }, 
+            "conversation": {
+                "id": conversation_id 
+            } 
+        }
+
+        
 def save_digidoc_message(text_content):
     for message in text_content:
         digiDoc_message = Message(sender="DigiDoc", content=message, timestamp=None)
@@ -187,6 +207,11 @@ def save_APIResponse(phase, question_type):
     response = APIResponse(phase=phase, question_type=question_type)
     response.full_clean()
     response.save()
+
+def save_conversationID(convo_id):
+    conversation = ConversationId(conversation_id=convo_id)
+    conversation.full_clean()
+    conversation.save()
 
 def delete_database():
     # deletes contents of the database
@@ -265,7 +290,8 @@ def new_chat(request):
     print("text content")
     print(text_content)
     save_digidoc_message(text_content)
-
+    conversation_id = api_response.get('conversation', {}).get('id' , None)
+    save_conversationID(conversation_id)
     all_messages = Message.objects.all()
     for message in all_messages:
         print(message.content)
@@ -306,7 +332,7 @@ def main_chat(request):
             return submit_choice(request)
         elif previous_phase == 'autocomplete_add':
             print("previous_phase -- autocomplete_add") 
-            return submit_choice(request)
+            return autocomplete(request)
         elif previous_phase == 'clarify': 
             print("previous_phase -- clarify") 
             return send_symptom_confirmation(request) 
@@ -683,11 +709,148 @@ def add_symptom(request):
         form2 = form2 = SingleChoiceForm()
     return render(request, 'chat2.html', {'form1': form1, 'form2':form2, 'symptoms':symptom, 'symptoms_count': symptoms_count, 'choices':choices})
 
-# def skip(request):
+def autocomplete(request):
+    response_data = Chat()
+    if request.method == 'GET': 
+        print("GET -- autocomplete")        
+        APIResponse.objects.all().delete()
+        response = []
+        added_symptoms = TextInput.objects.values_list('symptom_name', flat=True)
+        conversation_id = ConversationId.objects.first()
+        # Convert QuerySet to a Python list
+        added_symptoms_list = list(added_symptoms)
+        for symptom in added_symptoms_list:
+            api_response = response_data.autocomplete_request(symptom)
+            print(api_response)
+            response.append(api_response)
+        MultipleChoice.objects.all().delete()
+        print("response")
+        print(response)
+        for item in response:
+            autocomplete_list = item.get('autocomplete', []) 
+            for suggestion in autocomplete_list:
+                user_facing_name = suggestion.get('user_facing_name')
+                choice_id = suggestion.get('id')
+                print("User Facing Name:", user_facing_name)
+                print("ID:", choice_id)
+                # Create  object and save to database
+                chosen_option = MultipleChoice(choice_id=choice_id, name=user_facing_name, conversation_id=conversation_id)
+                chosen_option.full_clean()
+                chosen_option.save()
+            form = MultipleChoiceForm() 
+        return render(request, 'chat3.html', {'form':form})
+    return render(request, 'chat3.html', {'form':form})
 
-# def show_symptoms(request):
-#     symptoms = TextInput.objects.all()
-#     return render(request, 'show_symptoms.html', {'symptoms': symptoms})
+def autocomplete_post(request):
+    response_data = Chat()
+    if request.method == 'POST': 
+        print("GET -- autocomplete")        
+        APIResponse.objects.all().delete()
+        form = MultipleChoiceForm(request.POST)
+        selected_symptom_ids = []
+        selected_symptom_name = []
+        if form.is_valid():
+            selected_symptoms = form.cleaned_data['multiple_choices']
+            # Handle the selected condition data
+            for symptom in selected_symptoms:
+          
+                print(f"Selected symptom: {symptom}")
+    
+                selected_symptom_name.append(symptom.name)
+                # Retrieves the symptom ID from the symptom object and append it to the list
+                selected_symptom_ids.append(symptom.choice_id)
+                
+            print(str(selected_symptom_ids))
+
+            conversation_id = MultipleChoice.objects.get(choice_id=selected_symptom_ids[0]).conversation_id
+            print("convo id")
+            print(conversation_id)
+            print("selected_symptom_name")
+            print(str(selected_symptom_name))
+            content = "I confirm that I have the following condition(s): " + str(selected_symptom_name)
+            timestamp = request.POST.get('timestamp')
+            save_user_message(content, timestamp)
+            MultipleChoice.objects.all().delete()
+
+            response_data.set_autocomplete_post(selected_symptom_ids, conversation_id)
+            print(response_data.formatted_input)
+            response = requests.post(response_data.url, json=response_data.formatted_input, headers=response_data.headers)
+            print(response.json())
+            api_response = response.json()
+
+            # phase = get_phase_from_api_response(api_response)
+            # question_type = get_question_type_from_api_response(api_response)
+            # save_APIResponse(phase, question_type)
+
+            # template_name = get_template_for_phase(phase)
+
+        else:
+            print("NO")
+        # saves api response as messages
+        messages = []
+        messages.append(api_response.get('question', {}).get('messages' , []))
+
+
+        print("MESSAGES")
+        print(messages)
+
+        # check the type of message
+        message_type = api_response.get('question', {}).get('type' , [])
+        print("MESSAGE TYPE")
+        print(message_type)
+        if message_type == 'generic':
+            text_content = [msg['value'] for sublist in messages for msg in sublist if msg.get('type') == 'generic']
+            print("text content")
+            print(text_content)
+        elif message_type == 'health_background':
+            text_content = [msg['text'] for sublist in messages for msg in sublist if msg.get('type') == 'text' or msg.get('type') == 'small_text']
+            print("text content")
+            print(text_content)
+        elif message_type == 'symptoms':
+            text_content = [msg['text'] for sublist in messages for msg in sublist if msg.get('type') == 'text']
+            print("text content")
+            print(text_content)
+        else :
+            text_content = "No content"
+            print("text content")
+            print(text_content)
+        # text_content = [msg['value'] for sublist in messages for msg in sublist if msg.get('type') == 'generic']
+        # print("text content")
+        # print(text_content)
+        save_digidoc_message(text_content)
+
+        all_messages = Message.objects.all()
+        for message in all_messages:
+            print(message.content)
+
+        list_of_choices = []
+        list_of_choices.append(api_response.get('question', {}).get('choices' , []))
+
+        conversation_id = api_response.get('conversation', {}).get('id' , None)
+
+        print("CHOICES")
+        print(list_of_choices)
+        for sublist in list_of_choices:
+            for choice in sublist:
+                # Extracts choice id and label
+                choice_id = choice['id']
+                print("CHOICE ID")
+                print(choice_id)
+                choice_label = choice['text']
+                print("CHOICE LABEL")
+                print(choice_label)
+                # selected = True
+                choice_conversation_id = conversation_id
+        
+                # Create  object and save to database
+                chosen_option = MultipleChoice(choice_id=choice_id, name=choice_label, conversation_id=choice_conversation_id)
+                chosen_option.full_clean()
+                chosen_option.save()
+            form = MultipleChoiceForm()
+        return render(request, 'chat.html', {'messages': all_messages, 'form': form})
+    else:
+        form = MultipleChoiceForm()
+    return render(request, 'chat.html', {'form': form})
 
 def add_more_symptoms(request):
     response_data = Chat()
