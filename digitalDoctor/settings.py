@@ -11,7 +11,10 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 
 from pathlib import Path
+# from django.utils.translation import gettext as _
 
+def gettext_noop(s):
+    return s
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -49,6 +52,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
 ]
 
 ROOT_URLCONF = 'digitalDoctor.urls'
@@ -107,6 +111,15 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
+LANGUAGES = [
+    ("en", gettext_noop("English")),
+    ("es", gettext_noop("Spanish")),
+    ("fr", gettext_noop("French")),
+]
+
+LOCALE_PATHS= [
+    BASE_DIR / 'locale',
+]
 TIME_ZONE = 'UTC'
 
 USE_I18N = True

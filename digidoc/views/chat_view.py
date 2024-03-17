@@ -8,6 +8,7 @@ from django.http import HttpResponse, QueryDict
 from django.contrib.sessions.models import Session
 from django.http import HttpResponseNotFound
 from datetime import datetime
+from django.utils.translation import gettext as _
 
 from digidoc.healthily_API.API_authentication import APIAuthenticate
 class Chat():
@@ -299,7 +300,7 @@ def new_chat(request):
         if phase == 'user_name': 
             print("GET -- NEW CHAT")
             print("first 2:")
-            first_two_messages = text_content[:2]
+            first_two_messages = _(text_content[:2])
             print(first_two_messages)
             form = OnBoardingForm()
             return render(request, template_name, {'first_two_messages': first_two_messages, 'form': form, 'scenario': scenario})
@@ -744,7 +745,7 @@ def autocomplete(request):
 def autocomplete_post(request):
     response_data = Chat()
     if request.method == 'POST': 
-        print("GET -- autocomplete")        
+        print("GET -- autocomplete_post")        
         APIResponse.objects.all().delete()
         form = MultipleChoiceForm(request.POST)
         selected_symptom_ids = []
@@ -782,7 +783,7 @@ def autocomplete_post(request):
             # question_type = get_question_type_from_api_response(api_response)
             # save_APIResponse(phase, question_type)
 
-            # template_name = get_template_for_phase(phase)
+            template_name = get_template_for_phase(phase)
 
         else:
             print("NO")
