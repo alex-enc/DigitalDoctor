@@ -60,7 +60,12 @@ class ConversationId(models.Model):
     conversation_id = models.CharField(max_length=1000)
     def __str__(self):
         return self.conversation_id
-        
+
+class Language(models.Model):
+    language = models.CharField(max_length=1000)
+    language_code = models.CharField(max_length=10)
+    def __str__(self):
+        return self.language_code
 # class Condition(models.Model):
 #     name = models.CharField(max_length=100)
 #     def __str__(self):

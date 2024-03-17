@@ -3,6 +3,11 @@
     width: 120px;
 }
 
+.languages{
+    border-radius: 50px;
+    width: 150px;
+}
+
 .logo{
     font-size: 100px;
     color: #6495ED;

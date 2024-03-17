@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 
 from pathlib import Path
+import os
 # from django.utils.translation import gettext as _
 
 def gettext_noop(s):
@@ -41,7 +42,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'digidoc',
-    'widget_tweaks'
+    'widget_tweaks',
+    'autotranslate',
 ]
 
 MIDDLEWARE = [
@@ -111,15 +113,16 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-LANGUAGES = [
-    ("en", gettext_noop("English")),
-    ("es", gettext_noop("Spanish")),
-    ("fr", gettext_noop("French")),
-]
+# LANGUAGES = [
+#     ("en", gettext_noop("English")),
+#     ("es", gettext_noop("Spanish")),
+#     ("fr", gettext_noop("French")),
+# ]
 
-LOCALE_PATHS= [
-    BASE_DIR / 'locale',
-]
+# LOCALE_PATHS = [
+#     os.path.join(BASE_DIR, 'locale'),  
+# ]
+
 TIME_ZONE = 'UTC'
 
 USE_I18N = True

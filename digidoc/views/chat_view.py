@@ -2,13 +2,15 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 import requests
 import json
-from digidoc.models.message_models import Message, OnBoarding, MultipleChoice, SingleChoice, APIResponse, TextInput, HealthBackground, ConversationId
+from digidoc.models.message_models import Message, OnBoarding, MultipleChoice, SingleChoice, APIResponse, TextInput, HealthBackground, ConversationId, Language
 from digidoc.forms.chat_forms import SendMessageForm, OnBoardingForm, MultipleChoiceForm, SingleChoiceForm, TextInputForm
 from django.http import HttpResponse, QueryDict
 from django.contrib.sessions.models import Session
 from django.http import HttpResponseNotFound
 from datetime import datetime
-from django.utils.translation import gettext as _
+# from django.utils.translation import gettext as _
+from easygoogletranslate import EasyGoogleTranslate
+
 
 from digidoc.healthily_API.API_authentication import APIAuthenticate
 class Chat():
@@ -151,6 +153,7 @@ class Chat():
                 "id": conversation_id 
             } 
         }
+    
 
         
 def save_digidoc_message(text_content):
@@ -223,6 +226,7 @@ def delete_database():
     APIResponse.objects.all().delete()
     TextInput.objects.all().delete()
     HealthBackground.objects.all().delete()
+    Language.objects.all().delete()
 
 
 def get_phase_from_api_response(api_response):
@@ -255,13 +259,52 @@ def append_message(api_response):
 
 def get_text_content(messages):
     text_content = [msg['text'] for sublist in messages for msg in sublist if msg.get('type') == 'text']
-    
     return text_content
 
+def get_language_code(language):
+    if language == 'English':
+        return 'en'
+    elif language == 'Spanish':
+        return 'es'
+    elif language == 'French':
+        return 'fr'
+    elif language == 'Filipino':
+        return 'fil'
+
+def translate(target_language_code, content):
+    translator = EasyGoogleTranslate(
+        source_language='en',
+        target_language=target_language_code,
+        timeout=10
+    )
+    result = translator.translate(content)
+    return result
+
+def translate_to_english(source_language_code, content):
+    translator = EasyGoogleTranslate(
+    source_language='source_language_code',
+    target_language='en',
+    timeout=10
+    )
+    result = translator.translate(content)
+    return result
+
+def get_language_used():
+    language = (Language.objects.first()).language_code
+    return language
 
 def new_chat(request):
     response_data = Chat()
     delete_database()
+    if request.method == 'POST':
+        selected_language = request.POST.get('language')
+        print(selected_language)
+        target_language_code=get_language_code(selected_language)
+        language = Language(language=selected_language, language_code = target_language_code)
+        language.full_clean()
+        language.save()
+
+
     print(response_data.get_headers())
 
     response_data.set_response()
@@ -290,21 +333,26 @@ def new_chat(request):
     # text_content = get_text_content(messages)
     print("text content")
     print(text_content)
+    translated_messages = []
     save_digidoc_message(text_content)
+    for message in text_content:
+        print(message)
+        print(translate(target_language_code, message))
+        translated_messages.append(translate(target_language_code, message))
     conversation_id = api_response.get('conversation', {}).get('id' , None)
     save_conversationID(conversation_id)
     all_messages = Message.objects.all()
     for message in all_messages:
         print(message.content)
-    if request.method == 'GET':
-        if phase == 'user_name': 
-            print("GET -- NEW CHAT")
-            print("first 2:")
-            first_two_messages = _(text_content[:2])
-            print(first_two_messages)
-            form = OnBoardingForm()
-            return render(request, template_name, {'first_two_messages': first_two_messages, 'form': form, 'scenario': scenario})
- 
+    # if request.method == 'GET':
+    if phase == 'user_name': 
+        print("GET -- NEW CHAT")
+        print("first 2:")
+        first_two_messages = translated_messages[:2]
+        print(first_two_messages)
+        form = OnBoardingForm()
+        return render(request, template_name, {'first_two_messages': first_two_messages, 'form': form, 'scenario': scenario})
+
 def main_chat(request):
     # response_data = Chat()
     # api_response= response_data.get_response_data()
@@ -368,7 +416,8 @@ def send_on_boarding(request):
     response_data = Chat()
     if request.method == 'POST': 
         APIResponse.objects.all().delete()
-
+        target_language_code = get_language_used()
+        print(target_language_code)
         print("POST -- on_boarding")        
 
         form = OnBoardingForm(request.POST)
@@ -376,11 +425,15 @@ def send_on_boarding(request):
         if form.is_valid():
             name = request.POST.get('name')
             birth_year = request.POST.get('birth_year')
-            initial_symptoms = request.POST.get('initial_symptoms')
+            if target_language_code == 'en':
+                initial_symptoms = request.POST.get('initial_symptoms')
+            else:
+                initial_symptoms = translate_to_english(target_language_code, request.POST.get('initial_symptoms'))
             gender = request.POST.get('gender')
             timestamp = request.POST.get('timestamp')
             initial_symptoms_splitted = initial_symptoms.split(", ")
-
+            print("initial symptoms")
+            print(initial_symptoms)
             on_boarding_answers = OnBoarding(name=name, birth_year=birth_year, initial_symptoms=initial_symptoms_splitted, gender=gender, timestamp=timestamp)
             on_boarding_answers.full_clean()
             on_boarding_answers.save()
@@ -422,10 +475,15 @@ def send_on_boarding(request):
         print(text_content)
         save_digidoc_message(text_content)
 
+        translated_messages = []
         all_messages = Message.objects.all()
-        for message in all_messages:
-            print(message.content)
-
+    
+        for message in text_content:
+            print(message)
+            print(translate(target_language_code, message))
+            translated_messages.append(translate(target_language_code, message))
+    
+        print(translated_messages)
         save_symptoms(api_response)
 
         if multiple:
@@ -442,7 +500,10 @@ def send_on_boarding(request):
                 for choice in sublist:
                     # Extracts symptom id and label
                     choice_id = choice['id']
-                    choice_label = choice['label']
+                    if target_language_code == 'en':
+                        choice_label = choice['label']
+                    else:
+                        choice_label = translate(target_language_code, choice['label'])
                     # selected = True
                     choice_conversation_id = conversation_id
             

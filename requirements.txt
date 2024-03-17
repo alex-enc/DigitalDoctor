@@ -8,3 +8,4 @@ sqlparse==0.4.4
 typing_extensions==4.8.0
 django-widget-tweaks==1.5.0
 django-autotranslate==1.2.0
+easygoogletranslate==0.0.4

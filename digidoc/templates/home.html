@@ -1,4 +1,5 @@
 {% load static %}
+{% load i18n %}
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -63,9 +64,21 @@
                         <div class="card-body">
                             <h1 class="logo card-title mb-3"><strong>DigiDoc</strong></h1>
                         </div>
-                        <div class="mb-3" style="text-align: center; align-items: center; justify-content: center;">
-                            <a href="{% url 'new_chat' %}" class="btn btn-outline-primary start">Start</a>
-                        </div>
+                        <form action="{% url 'new_chat' %}" method="post">
+                            {% csrf_token %}
+                            <div class="form-group">
+                                <label for="languageSelect">Select Language:</label>
+                                <select class="form-control" id="languageSelect" name="language">
+                                    <option value="English">English</option>
+                                    <option value="Spanish">Spanish</option>
+                                    <option value="French">French</option>
+                                    <option value="Filipino">Filipino</option>
+                                    <!-- Add more language options as needed -->
+                                </select>
+                            </div>
+                            <input type="submit" value="Start" class="btn btn-outline-primary start">
+                        </form>
+                        
                     </div>
                 </div>
             </div>
