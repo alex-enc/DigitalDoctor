@@ -366,7 +366,7 @@ def translate_to_english(source_language_code, content):
     translator = EasyGoogleTranslate(
     source_language='source_language_code',
     target_language='en',
-    timeout=10
+    timeout=1000
     )
     result = translator.translate(content)
     return result
