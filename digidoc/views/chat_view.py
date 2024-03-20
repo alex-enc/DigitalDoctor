@@ -2,8 +2,13 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 import requests
 import json
+<<<<<<< HEAD
 from digidoc.models.message_models import OnBoarding, MultipleChoice, SingleChoice, APIResponse, TextInput, HealthBackground, Language, ConversationId
 from digidoc.forms.chat_forms import OnBoardingForm, MultipleChoiceForm, SingleChoiceForm, TextInputForm
+=======
+from digidoc.models.message_models import Message, OnBoarding, MultipleChoice, SingleChoice, APIResponse, TextInput, HealthBackground, ConversationId, Language
+from digidoc.forms.chat_forms import SendMessageForm, OnBoardingForm, MultipleChoiceForm, SingleChoiceForm, TextInputForm
+>>>>>>> parent of a140bc1 (Remove message models and include more fields in the APIResponse model)
 from django.http import HttpResponse, QueryDict
 from django.contrib.sessions.models import Session
 from django.http import HttpResponseNotFound
@@ -339,7 +344,17 @@ def delete_database():
     TextInput.objects.all().delete()
     HealthBackground.objects.all().delete()
     Language.objects.all().delete()
+<<<<<<< HEAD
     ConversationId.objects.all().delete()
+=======
+
+
+def get_phase_from_api_response(api_response):
+    return api_response['conversation']['phase']
+
+def get_question_type_from_api_response(api_response):
+    return api_response['question']['type']
+>>>>>>> parent of a140bc1 (Remove message models and include more fields in the APIResponse model)
 
 def get_template_for_phase(phase):
     phase_templates = {
@@ -773,11 +788,15 @@ def submit_choice(request):
             print(symptoms_count)
             choices = SingleChoice.objects.all()
             return render(request, 'chat2.html', {'messages': translated_messages,'form1': form1, 'form2': form2, 'symptoms_count': symptoms_count, 'choices':choices})
+<<<<<<< HEAD
         elif (phase=='duration'):
             SingleChoice.objects.all().delete()
             save_choices_label(target_language_code, api_response)
             form = SingleChoiceForm()
             return render(request, 'chat.html', {'messages': translated_messages,'form': form})
+=======
+       
+>>>>>>> parent of a140bc1 (Remove message models and include more fields in the APIResponse model)
         else:
             pass
     else:
