@@ -167,7 +167,7 @@ def save_user_message(content, timestamp):
     user_message.full_clean()
     user_message.save()
 
-def save_symptoms(api_response):
+def save_mcq_label(target_language_code, api_response):
     all_symptoms=[]
     all_symptoms.append(api_response.get('question', {}).get('choices' , []))
     conversation_id = api_response.get('conversation', {}).get('id' , None)
@@ -179,7 +179,10 @@ def save_symptoms(api_response):
         for symptom_data in sublist:
             # Extracts symptom id and label
             symptom_id = symptom_data['id']
-            symptom_label = symptom_data['label']
+            if target_language_code == 'en':
+                symptom_label = symptom_data['label']
+            else:
+                symptom_label = translate(target_language_code, symptom_data['label'])
             symptom_conversation_id = conversation_id
     
             # Create MultipleChoice object and save selected choice(s) to the database
@@ -187,7 +190,7 @@ def save_symptoms(api_response):
             symptom.full_clean()
             symptom.save()
 
-def save_conditions(api_response):
+def save_mcq_long_name(target_language_code, api_response):
     all_conditions=[]
     all_conditions.append(api_response.get('question', {}).get('choices' , []))
     conversation_id = api_response.get('conversation', {}).get('id' , None)
@@ -199,75 +202,106 @@ def save_conditions(api_response):
         for health_condition_data in sublist:
             # Extracts symptom id and label
             condition_id = health_condition_data['id']
-            condition_long_name = health_condition_data['long_name']
+            if target_language_code == 'en':
+                condition_long_name = health_condition_data['long_name']
+            else:
+                condition_long_name = translate(target_language_code, health_condition_data['long_name'])
             condition_conversation_id = conversation_id
     
             # Create MultipleChoice object and save selected choice(s) to the database
             condition = MultipleChoice(choice_id=condition_id, name=condition_long_name, conversation_id=condition_conversation_id)
             condition.full_clean()
             condition.save()
+    
+def save_mcq_text(target_language_code, api_response):
+    list_of_choices = []
+    list_of_choices.append(api_response.get('question', {}).get('choices' , []))
 
-<<<<<<< HEAD
-def save_APIResponse(api_response):
-    # conversation_id = api_response['conversation']['id']
-    scenario = api_response['conversation']['scenario']
-    phase = api_response['conversation']['phase']
-    progress_stage = api_response['conversation']['progress']['stage']
-    progress_percentage = api_response['conversation']['progress']['percentage']
-    step_back_possible = api_response['conversation']['progress']['percentage']
-    question_type = api_response.get('question', {}).get('type', [])
-    has_constraints = check_if_has_constraints(api_response)
-    # if has_constraints:
-    # min_selection = api_response.get('question', {}).get('constraints', {}).get('min_selections', [])
-    # max_selection = api_response.get('question', {}).get('constraints', {}).get('max_selections', [])
-    # else:
-    #     min_selection = None
-    #     max_selection = None
-    print("mandatory")
-    print(check_if_has_mandatory(api_response))
-# if check_if_has_mandatory(api_response):
-    mandatory = api_response.get('question', {}).get('mandatory', None)
-    if mandatory == None:
-        mandatory = False
-    multiple = api_response.get('question', {}).get('multiple', None)
-    if multiple == None:
-            multiple = False
+    conversation_id = api_response.get('conversation', {}).get('id' , None)
 
-    response = APIResponse(
-        # conversation_id=conversation_id,
-        scenario=scenario,
-        phase=phase,
-        progress_stage=progress_stage,
-        progress_percentage=progress_percentage,
-        step_back_possible=step_back_possible,
-        has_constraints=has_constraints,
-        # min_selection=min_selection,
-        # max_selection=max_selection,
-        question_type= question_type,
-        mandatory=mandatory,
-        multiple=multiple
-        )
-=======
+    print("CHOICES")
+    print(list_of_choices)
+    for sublist in list_of_choices:
+        for choice in sublist:
+            # Extracts choice id and label
+            choice_id = choice['id']
+            print("CHOICE ID")
+            print(choice_id)
+            if target_language_code == 'en':
+                choice_label = choice['text']
+            else:
+                choice_label = translate(target_language_code, choice['text'])
+            print("CHOICE LABEL")
+            print(choice_label)
+            # selected = True
+            choice_conversation_id = conversation_id
+    
+            # Create  object and save to database
+            chosen_option = MultipleChoice(choice_id=choice_id, name=choice_label, conversation_id=choice_conversation_id)
+            chosen_option.full_clean()
+            chosen_option.save()
+
+def save_choices_label(target_language_code, api_response):
+        list_of_choices = []
+        list_of_choices.append(api_response.get('question', {}).get('choices' , []))
+
+        conversation_id = api_response.get('conversation', {}).get('id' , None)
+
+        print("CHOICES")
+        print(list_of_choices)
+        for sublist in list_of_choices:
+            for choice in sublist:
+                # Extracts symptom id and label
+                choice_id = choice['id']
+                if target_language_code == 'en':
+                    choice_label = choice['label']
+                else:
+                    choice_label = translate(target_language_code, choice['label'])
+                # selected = True
+                choice_conversation_id = conversation_id
+        
+                # Create Symptom object and save to database
+                chosen_option = SingleChoice(choice_id=choice_id, label=choice_label, conversation_id=choice_conversation_id)
+                chosen_option.full_clean()
+                chosen_option.save()
+
+def save_choices_text(target_language_code, api_response):
+        list_of_choices = []
+        list_of_choices.append(api_response.get('question', {}).get('choices' , []))
+
+        conversation_id = api_response.get('conversation', {}).get('id' , None)
+
+        print("CHOICES")
+        print(list_of_choices)
+        for sublist in list_of_choices:
+            for choice in sublist:
+                # Extracts symptom id and label
+                choice_id = choice['id']
+                if target_language_code == 'en':
+                    choice_label = choice['text']
+                else:
+                    choice_label = translate(target_language_code, choice['text'])
+                # selected = True
+                choice_conversation_id = conversation_id
+        
+                # Create Symptom object and save to database
+                chosen_option = SingleChoice(choice_id=choice_id, label=choice_label, conversation_id=choice_conversation_id)
+                chosen_option.full_clean()
+                chosen_option.save()
+
 def save_APIResponse(phase, question_type):
     response = APIResponse(phase=phase, question_type=question_type)
->>>>>>> parent of b9175b9 (Create methods for saving mcqs and single choices depending on text/label and integrate translation)
     response.full_clean()
     response.save()
 
-def save_conversationID(api_response):
-    conversation_id = api_response['conversation']['id']
-    conversation = ConversationId(conversation_id=conversation_id)
+def save_conversationID(convo_id):
+    conversation = ConversationId(conversation_id=convo_id)
     conversation.full_clean()
     conversation.save()
 
-def check_if_has_constraints(api_response):
-    return 'constraints' in api_response['question']
-
-def check_if_has_mandatory(api_response):
-    return 'mandatory' in api_response['question']
-
 def delete_database():
     # deletes contents of the database
+    # Message.objects.all().delete()
     OnBoarding.objects.all().delete()
     MultipleChoice.objects.all().delete() 
     SingleChoice.objects.all().delete()
@@ -361,21 +395,16 @@ def new_chat(request):
 
     api_response= response_data.get_response_data()
     print(api_response)
-    save_APIResponse(api_response)
-    save_conversationID(api_response)
-    api_response_database = APIResponse.objects.get()
-
+    scenario = api_response.get('conversation', {}).get('scenario' , [])
     print("scenario")
-    scenario = api_response_database.scenario
     print(scenario)
 
     # Get the phase of the conversation
-    # phase = get_phase_from_api_response(api_response)
-    # question_type = get_question_type_from_api_response(api_response)
-    # save_APIResponse(phase, question_type)
+    phase = get_phase_from_api_response(api_response)
+    question_type = get_question_type_from_api_response(api_response)
+    save_APIResponse(phase, question_type)
 
     # the template based on the phase
-    phase = api_response_database.phase
     template_name = get_template_for_phase(phase)
     print("TEMPLATE")
     print(template_name)
@@ -387,26 +416,15 @@ def new_chat(request):
     print("text content")
     print(text_content)
     translated_messages = []
-<<<<<<< HEAD
-
-=======
->>>>>>> parent of b9175b9 (Create methods for saving mcqs and single choices depending on text/label and integrate translation)
-    save_digidoc_message(text_content)
+    # save_digidoc_message(text_content)
     for message in text_content:
         print(message)
         print(translate(target_language_code, message))
         translated_messages.append(translate(target_language_code, message))
-<<<<<<< HEAD
-
-    # all_messages = Message.objects.all()
-
-=======
->>>>>>> parent of b9175b9 (Create methods for saving mcqs and single choices depending on text/label and integrate translation)
     conversation_id = api_response.get('conversation', {}).get('id' , None)
     save_conversationID(conversation_id)
-    all_messages = Message.objects.all()
-    for message in all_messages:
-        print(message.content)
+    # all_messages = Message.objects.all()
+
     # if request.method == 'GET':
     if phase == 'user_name': 
         print("GET -- NEW CHAT")
@@ -420,13 +438,17 @@ def main_chat(request):
     # response_data = Chat()
     # api_response= response_data.get_response_data()
     # Get the phase of the conversation
-    api_response_database = APIResponse.objects.get()
-    previous_phase = api_response_database.phase
+    previous_phase = (APIResponse.objects.get()).phase
     print("previous PHASE")
     print(str(previous_phase))
-    previous_question_type = api_response_database.question_type
+    previous_question_type = (APIResponse.objects.get()).question_type
     print("previous question type")
     print(str(previous_question_type))
+    # the default template 
+    # template_name = None
+    # form = None
+    # print("TEMPLATE")
+    # print(template_name)
     
     if request.method == 'POST':
         if previous_phase == 'user_name': 
@@ -497,8 +519,8 @@ def send_on_boarding(request):
             on_boarding_answers.full_clean()
             on_boarding_answers.save()
 
-            content = "Name: " + str(name) + ", " + "Birth Year: " + str(birth_year) + ", " + "Initial Symptoms: " + str(initial_symptoms) + ", " + "Gender: " + str(gender)
-            save_user_message(content, timestamp)
+            # content = "Name: " + str(name) + ", " + "Birth Year: " + str(birth_year) + ", " + "Initial Symptoms: " + str(initial_symptoms) + ", " + "Gender: " + str(gender)
+            # save_user_message(content, timestamp)
 
         response_data.set_on_boarding_answers_in_formatted_input(on_boarding_answers.name, on_boarding_answers.birth_year, on_boarding_answers.initial_symptoms, on_boarding_answers.gender)
 
@@ -506,36 +528,37 @@ def send_on_boarding(request):
         print(response.json())
         api_response = response.json()
 
-        save_APIResponse(api_response)
-        api_response_database = APIResponse.objects.get()
-
-        phase = api_response_database.phase
-        question_type = api_response_database.question_type
-
-        print("phase")
-        print(phase)
         phase = get_phase_from_api_response(api_response)
         question_type = get_question_type_from_api_response(api_response)
         save_APIResponse(phase, question_type)
-
+        print("phase")
+        print(phase)
         template_name = get_template_for_phase(phase)
 
         # saves api response as messages
         messages = []
         messages.append(api_response.get('question', {}).get('messages' , []))
        
-        print("mandatory: " + str(api_response_database.mandatory))
-        print("multiple: " + str(api_response_database.multiple))
+        # Check if mandatory and multiple fields are true
+        mandatory = api_response.get('question', {}).get('mandatory' , [])
+        multiple = api_response.get('question', {}).get('multiple' , [])
+
+        if mandatory and multiple:
+            print("mandatory: " + str(mandatory))
+            print("multiple: " + str(multiple))
+        else:
+            print("FALSE")
 
         print("MESSAGES")
         print(messages)
         text_content = [msg['value'] for sublist in messages for msg in sublist if msg.get('type') == 'generic']
+        # text_content= get_text_content(messages)
         print("text content")
         print(text_content)
-        save_digidoc_message(text_content)
+        # save_digidoc_message(text_content)
 
         translated_messages = []
-        all_messages = Message.objects.all()
+        # all_messages = Message.objects.all()
     
         for message in text_content:
             print(message)
@@ -543,47 +566,22 @@ def send_on_boarding(request):
             translated_messages.append(translate(target_language_code, message))
     
         print(translated_messages)
-        save_symptoms(api_response)
+        save_mcq_label(target_language_code, api_response)
 
-        if api_response_database.multiple:
+        if multiple:
             form = MultipleChoiceForm()
         else:
-            list_of_choices = []
-            list_of_choices.append(api_response.get('question', {}).get('choices' , []))
-
-            conversation_id = api_response.get('conversation', {}).get('id' , None)
-
-            print("CHOICES")
-            print(list_of_choices)
-            for sublist in list_of_choices:
-                for choice in sublist:
-                    # Extracts symptom id and label
-                    choice_id = choice['id']
-                    if target_language_code == 'en':
-                        choice_label = choice['label']
-                    else:
-                        choice_label = translate(target_language_code, choice['label'])
-                    # selected = True
-                    choice_conversation_id = conversation_id
-            
-                    # Create Symptom object and save to database
-                    chosen_option = SingleChoice(choice_id=choice_id, label=choice_label, conversation_id=choice_conversation_id)
-                    chosen_option.full_clean()
-                    chosen_option.save()
+            save_choices_label(target_language_code,api_response)
             form = SingleChoiceForm()
-<<<<<<< HEAD
-        return render(request, template_name, {'messages': translated_messages, 'form': form})
-=======
->>>>>>> parent of b9175b9 (Create methods for saving mcqs and single choices depending on text/label and integrate translation)
         # return api_response
-        return render(request, template_name, {'messages': all_messages, 'form': form})
-
-
+        return render(request, template_name, {'messages': translated_messages, 'form': form})
 
 def send_symptom_confirmation(request):
     response_data = Chat()
     SingleChoice.objects.all().delete()
     if request.method == 'POST': 
+        target_language_code = get_language_used()
+        print(target_language_code)
         print("POST -- send_symptom_confirmation")        
         APIResponse.objects.all().delete()
         form = MultipleChoiceForm(request.POST)
@@ -593,19 +591,21 @@ def send_symptom_confirmation(request):
             selected_symptoms = form.cleaned_data['multiple_choices']
             # Handle the selected symptoms data
             for symptom in selected_symptoms:
-                print(f"Selected Symptom: {symptom}")  
+          
+                print(f"Selected Symptom: {symptom}")
+    
                 selected_symptoms_name.append(symptom.name)
                 # Retrieves the symptom's choice_ID from the MultipleChoice object and append it to the list
                 selected_symptoms_ids.append(symptom.choice_id)
             print(str(selected_symptoms_ids))
-            conversation_id = (ConversationId.objects.get()).conversation_id
+            conversation_id = MultipleChoice.objects.get(choice_id=selected_symptoms_ids[0]).conversation_id
             print("convo id")
             print(conversation_id)
             print("selected_symptoms_name")
             print(str(selected_symptoms_name))
-            content = "I confirm that I have the following symptom(s): " + str(selected_symptoms_name)
-            timestamp = request.POST.get('timestamp')
-            save_user_message(content, timestamp)
+            # content = "I confirm that I have the following symptom(s): " + str(selected_symptoms_name)
+            # timestamp = request.POST.get('timestamp')
+            # save_user_message(content, timestamp)
 
 
         response_data.set_symptom_confirmation_in_formatted_input(selected_symptoms_ids, conversation_id)
@@ -614,11 +614,9 @@ def send_symptom_confirmation(request):
         print(response.json())
         api_response = response.json()
 
-        save_APIResponse(api_response)
-        api_response_database = APIResponse.objects.get()
-
-        phase = api_response_database.phase
-        question_type = api_response_database.question_type
+        phase = get_phase_from_api_response(api_response)
+        question_type = get_question_type_from_api_response(api_response)
+        save_APIResponse(phase, question_type)
 
         template_name = get_template_for_phase(phase)
 
@@ -642,8 +640,10 @@ def send_symptom_confirmation(request):
         else :
             text_content = "No content"
 
-<<<<<<< HEAD
+        # save_digidoc_message(text_content)
+
         translated_messages = []
+        # all_messages = Message.objects.all()
     
         for message in text_content:
             print(message)
@@ -652,55 +652,22 @@ def send_symptom_confirmation(request):
     
         print(translated_messages)
         save_mcq_label(target_language_code, api_response)
-=======
-        save_digidoc_message(text_content)
 
-        all_messages = Message.objects.all()
-        # for message in all_messages:
-        #     print(message.content)
->>>>>>> parent of b9175b9 (Create methods for saving mcqs and single choices depending on text/label and integrate translation)
+        save_choices_label(target_language_code, api_response)
 
-        list_of_choices = []
-        list_of_choices.append(api_response.get('question', {}).get('choices' , []))
-
-<<<<<<< HEAD
-        save_digidoc_message(text_content)
-
-        all_messages = Message.objects.all()
-        # for message in all_messages:
-        #     print(message.content)
-
-        list_of_choices = []
-        list_of_choices.append(api_response.get('question', {}).get('choices' , []))
-
-=======
->>>>>>> parent of b9175b9 (Create methods for saving mcqs and single choices depending on text/label and integrate translation)
-        conversation_id = api_response.get('conversation', {}).get('id' , None)
-
-        print("CHOICES")
-        print(list_of_choices)
-        for sublist in list_of_choices:
-            for choice in sublist:
-                # Extracts symptom id and label
-                choice_id = choice['id']
-                choice_label = choice['label']
-                # selected = True
-                choice_conversation_id = conversation_id
-        
-                # Create Symptom object and save to database
-                chosen_option = SingleChoice(choice_id=choice_id, label=choice_label, conversation_id=choice_conversation_id)
-                chosen_option.full_clean()
-                chosen_option.save()
         form = SingleChoiceForm()
+        # return render(request, 'chat.html', {'messages': all_messages, 'form': form})
     else:
         form = MultipleChoiceForm()
-    return render(request, 'chat.html', {'messages': all_messages, 'form': form})
+    return render(request, 'chat.html', {'messages': translated_messages, 'form': form})
 
 def submit_choice(request):
     response_data = Chat()
     if request.method == 'POST': 
         print("POST -- submit_choice")        
         APIResponse.objects.all().delete()
+        target_language_code = get_language_used()
+        print(target_language_code)
         form = SingleChoiceForm(request.POST)
         selected_choice_id = []
         selected_choice_label = []
@@ -715,14 +682,14 @@ def submit_choice(request):
             # Retrieves the choice ID from the choice object and append it to the list
             selected_choice_id.append(choice.choice_id)
             print(str(selected_choice_id))
-            conversation_id = (ConversationId.objects.get()).conversation_id
+            conversation_id = SingleChoice.objects.get(choice_id=selected_choice_id[0]).conversation_id
             print("convo id")
             print(conversation_id)
             print("selected_choice_label")
             print(str(selected_choice_label))
-            content = "Selected: " + str(selected_choice_label)
-            timestamp = request.POST.get('timestamp')
-            save_user_message(content, timestamp)
+            # content = "Selected: " + str(selected_choice_label)
+            # timestamp = request.POST.get('timestamp')
+            # save_user_message(content, timestamp)
 
             response_data.set_symptom_confirmation_in_formatted_input(selected_choice_id, conversation_id)
 
@@ -730,13 +697,12 @@ def submit_choice(request):
             print(response.json())
             api_response = response.json()
 
-            save_APIResponse(api_response)
-            api_response_database = APIResponse.objects.get()
-            
-            phase = api_response_database.phase
-            question_type = api_response_database.question_type
+            phase = get_phase_from_api_response(api_response)
+            question_type = get_question_type_from_api_response(api_response)
+            save_APIResponse(phase, question_type)
 
             template_name = get_template_for_phase(phase)
+          
         else:
             print("NO")
         # saves api response as messages
@@ -747,7 +713,7 @@ def submit_choice(request):
         print(messages)
 
         # check the type of message
-        message_type = api_response_database.question_type
+        message_type = api_response.get('question', {}).get('type' , [])
         print("MESSAGE TYPE")
         print(message_type)
         if message_type == 'generic':
@@ -767,83 +733,46 @@ def submit_choice(request):
             print("text content")
             print(text_content)
 
-<<<<<<< HEAD
+        # save_digidoc_message(text_content)
+
         translated_messages = []
+        # all_messages = Message.objects.all()
     
         for message in text_content:
             print(message)
             print(translate(target_language_code, message))
             translated_messages.append(translate(target_language_code, message))
     
-        save_digidoc_message(text_content)
-=======
-        save_digidoc_message(text_content)
 
-        all_messages = Message.objects.all()
->>>>>>> parent of b9175b9 (Create methods for saving mcqs and single choices depending on text/label and integrate translation)
-
-        all_messages = Message.objects.all()
-
-        phase = api_response_database.phase
+        phase_value = api_response['conversation']['phase']
         print("phase")
         print(phase_value)
-        if (phase=='info_result'):
+        if (phase_value=='info_result'):
             form = SingleChoiceForm()
             # Accessing the articles
             articles = api_response['report']['articles']
             request.session['articles'] = json.dumps(articles)
-<<<<<<< HEAD
             return render(request, 'end_of_chat.html', {'messages': translated_messages, 'form': form})
-        elif (phase=='clarify'):
-=======
->>>>>>> parent of b9175b9 (Create methods for saving mcqs and single choices depending on text/label and integrate translation)
-            return render(request, 'end_of_chat.html', {'messages': all_messages, 'form': form})
         elif (phase_value=='clarify'):
             MultipleChoice.objects.all().delete()
-            save_symptoms(api_response)
+            save_mcq_label(target_language_code, api_response)
             form = MultipleChoiceForm()
-<<<<<<< HEAD
             return render(request, 'chat.html', {'messages': translated_messages,'form': form})
-        elif (phase=='health_background'):
-=======
->>>>>>> parent of b9175b9 (Create methods for saving mcqs and single choices depending on text/label and integrate translation)
-            return render(request, 'chat.html', {'messages': all_messages,'form': form})
         elif (phase_value=='health_background'):
             MultipleChoice.objects.all().delete()
-            save_conditions(api_response)
+            save_mcq_long_name(target_language_code,api_response)
             form = MultipleChoiceForm()
-<<<<<<< HEAD
             return render(request, 'chat.html', {'messages': translated_messages,'form': form})
-        elif (phase=='autocomplete_add'):
-=======
->>>>>>> parent of b9175b9 (Create methods for saving mcqs and single choices depending on text/label and integrate translation)
-            return render(request, 'chat.html', {'messages': all_messages,'form': form})
         elif (phase_value=='autocomplete_add'):
             SingleChoice.objects.all().delete()
-            list_of_choices = []
-            list_of_choices.append(api_response.get('question', {}).get('choices' , []))
-
-            print("CHOICES")
-            print(list_of_choices)
-            for sublist in list_of_choices:
-                for choice in sublist:
-                    # Extracts symptom id and label
-                    choice_id = choice['id']
-                    choice_label = choice['text']
-                    # selected = True
-                    choice_conversation_id = conversation_id
-            
-                    # Create Symptom object and save to database
-                    chosen_option = SingleChoice(choice_id=choice_id, label=choice_label, conversation_id=choice_conversation_id)
-                    chosen_option.full_clean()
-                    chosen_option.save()
+            save_choices_text(target_language_code, api_response)
             form1 = TextInputForm()
             form2 = SingleChoiceForm()
             symptoms_count = TextInput.objects.count()
             print("COUNT")
             print(symptoms_count)
             choices = SingleChoice.objects.all()
-            return render(request, 'chat2.html', {'messages': all_messages,'form1': form1, 'form2': form2, 'symptoms_count': symptoms_count, 'choices':choices})
+            return render(request, 'chat2.html', {'messages': translated_messages,'form1': form1, 'form2': form2, 'symptoms_count': symptoms_count, 'choices':choices})
        
         else:
             pass
@@ -929,8 +858,10 @@ def autocomplete_post(request):
         if form.is_valid():
             selected_symptoms = form.cleaned_data['multiple_choices']
             # Handle the selected condition data
-            for symptom in selected_symptoms:        
-                print(f"Selected symptom: {symptom}")  
+            for symptom in selected_symptoms:
+          
+                print(f"Selected symptom: {symptom}")
+    
                 selected_symptom_name.append(symptom.name)
                 # Retrieves the symptom ID from the symptom object and append it to the list
                 selected_symptom_ids.append(symptom.choice_id)
@@ -942,7 +873,9 @@ def autocomplete_post(request):
             print(conversation_id)
             print("selected_symptom_name")
             print(str(selected_symptom_name))
-
+            content = "I confirm that I have the following condition(s): " + str(selected_symptom_name)
+            timestamp = request.POST.get('timestamp')
+            save_user_message(content, timestamp)
             MultipleChoice.objects.all().delete()
 
             response_data.set_autocomplete_post(selected_symptom_ids, conversation_id)
@@ -951,8 +884,10 @@ def autocomplete_post(request):
             print(response.json())
             api_response = response.json()
 
-            save_APIResponse(api_response)
-            api_response_database = APIResponse.objects.get()
+            # phase = get_phase_from_api_response(api_response)
+            # question_type = get_question_type_from_api_response(api_response)
+            # save_APIResponse(phase, question_type)
+
             template_name = get_template_for_phase(phase)
 
         else:
@@ -961,11 +896,12 @@ def autocomplete_post(request):
         messages = []
         messages.append(api_response.get('question', {}).get('messages' , []))
 
+
         print("MESSAGES")
         print(messages)
 
         # check the type of message
-        message_type = api_response_database.question_type
+        message_type = api_response.get('question', {}).get('type' , [])
         print("MESSAGE TYPE")
         print(message_type)
         if message_type == 'generic':
@@ -984,47 +920,18 @@ def autocomplete_post(request):
             text_content = "No content"
             print("text content")
             print(text_content)
+        # text_content = [msg['value'] for sublist in messages for msg in sublist if msg.get('type') == 'generic']
+        # print("text content")
+        # print(text_content)
+        save_digidoc_message(text_content)
 
-        translated_messages = []
+        all_messages = Message.objects.all()
+        for message in all_messages:
+            print(message.content)
 
-<<<<<<< HEAD
-        for message in text_content:
-            print(message)
-            print(translate(target_language_code, message))
-            translated_messages.append(translate(target_language_code, message))
 
-        form = MultipleChoiceForm()
-        return render(request, 'chat.html', {'messages': translated_messages, 'form': form})
-        list_of_choices = []
-        list_of_choices.append(api_response.get('question', {}).get('choices' , []))
-
-=======
-        list_of_choices = []
-        list_of_choices.append(api_response.get('question', {}).get('choices' , []))
-
->>>>>>> parent of b9175b9 (Create methods for saving mcqs and single choices depending on text/label and integrate translation)
-        conversation_id = api_response.get('conversation', {}).get('id' , None)
-
-        print("CHOICES")
-        print(list_of_choices)
-        for sublist in list_of_choices:
-            for choice in sublist:
-                # Extracts choice id and label
-                choice_id = choice['id']
-                print("CHOICE ID")
-                print(choice_id)
-                choice_label = choice['text']
-                print("CHOICE LABEL")
-                print(choice_label)
-                # selected = True
-                choice_conversation_id = conversation_id
-        
-                # Create  object and save to database
-                chosen_option = MultipleChoice(choice_id=choice_id, name=choice_label, conversation_id=choice_conversation_id)
-                chosen_option.full_clean()
-                chosen_option.save()
             form = MultipleChoiceForm()
-        return render(request, 'chat.html', {'messages': all_messages, 'form': form})
+        return render(request, 'chat.html', {'messages': translated_messages, 'form': form})
     else:
         form = MultipleChoiceForm()
     return render(request, 'chat.html', {'form': form})
@@ -1053,6 +960,9 @@ def add_more_symptoms(request):
             print(conversation_id)
             print("selected_choice_label")
             print(str(selected_choice_label))
+            content = "Selected: " + str(selected_choice_label)
+            timestamp = request.POST.get('timestamp')
+            save_user_message(content, timestamp)
 
             response_data.set_symptom_confirmation_in_formatted_input(selected_choice_id, conversation_id)
 
@@ -1060,11 +970,9 @@ def add_more_symptoms(request):
             print(response.json())
             api_response = response.json()
 
-            save_APIResponse(api_response)
-            api_response_database = APIResponse.objects.get()
-
-            phase = api_response_database.phase
-            question_type = api_response_database.question_type
+            phase = get_phase_from_api_response(api_response)
+            question_type = get_question_type_from_api_response(api_response)
+            save_APIResponse(phase, question_type)
         else:
             print("NO")
         # saves api response as messages
@@ -1075,7 +983,7 @@ def add_more_symptoms(request):
         print(messages)
 
         # check the type of message
-        message_type =  api_response_database.question_type
+        message_type = api_response.get('question', {}).get('type' , [])
         print("MESSAGE TYPE")
         print(message_type)
         if message_type == 'generic':
@@ -1092,18 +1000,14 @@ def add_more_symptoms(request):
             print("text content")
             print(text_content)
 
-        translated_messages = []
-    
-        for message in text_content:
-            print(message)
-            print(translate(target_language_code, message))
-            translated_messages.append(translate(target_language_code, message))
-    
+        save_digidoc_message(text_content)
+
+        all_messages = Message.objects.all()
 
         MultipleChoice.objects.all().delete()
-        save_symptoms(api_response)
+        save_mcq_label(target_language_code, api_response)
         form = MultipleChoiceForm()
-        return render(request, 'chat.html', {'messages': all_messages,'form': form})
+        return render(request, 'chat.html', {'messages': translated_messages,'form': form})
     else:
         form = MultipleChoiceForm()
     return render(request, 'chat.html', {'form': form})
@@ -1113,6 +1017,8 @@ def send_condition(request):
     response_data = Chat()
     # MultipleChoice.objects.all().delete()
     if request.method == 'POST': 
+        target_language_code = get_language_used()
+        print(target_language_code)
         print("POST -- send_condition")        
         APIResponse.objects.all().delete()
         form = MultipleChoiceForm(request.POST)
@@ -1133,29 +1039,25 @@ def send_condition(request):
                 health_background.save()
             print(str(selected_condition_ids))
 
-            conversation_id = (ConversationId.objects.get()).conversation_id
+            conversation_id = MultipleChoice.objects.get(choice_id=selected_condition_ids[0]).conversation_id
             print("convo id")
             print(conversation_id)
             print("selected_condition_name")
             print(str(selected_condition_name))
-<<<<<<< HEAD
-
-=======
->>>>>>> parent of b9175b9 (Create methods for saving mcqs and single choices depending on text/label and integrate translation)
-            content = "I confirm that I have the following condition(s): " + str(selected_condition_name)
-            timestamp = request.POST.get('timestamp')
-            save_user_message(content, timestamp)
+            # content = "I confirm that I have the following condition(s): " + str(selected_condition_name)
+            # timestamp = request.POST.get('timestamp')
+            # save_user_message(content, timestamp)
             MultipleChoice.objects.all().delete()
 
             response_data.set_condition_confirmation_in_formatted_input(selected_condition_ids, conversation_id)
 
             response = requests.post(response_data.url, json=response_data.formatted_input, headers=response_data.headers)
             print(response.json())
-            save_APIResponse(api_response)
-            api_response_database = APIResponse.objects.get()
+            api_response = response.json()
 
-            phase = api_response_database.phase
-            question_type = api_response_database.question_type
+            phase = get_phase_from_api_response(api_response)
+            question_type = get_question_type_from_api_response(api_response)
+            save_APIResponse(phase, question_type)
 
             template_name = get_template_for_phase(phase)
 
@@ -1165,11 +1067,12 @@ def send_condition(request):
         messages = []
         messages.append(api_response.get('question', {}).get('messages' , []))
 
+
         print("MESSAGES")
         print(messages)
 
         # check the type of message
-        message_type = api_response_database.question_type
+        message_type = api_response.get('question', {}).get('type' , [])
         print("MESSAGE TYPE")
         print(message_type)
         if message_type == 'generic':
@@ -1191,10 +1094,10 @@ def send_condition(request):
         # text_content = [msg['value'] for sublist in messages for msg in sublist if msg.get('type') == 'generic']
         # print("text content")
         # print(text_content)
-        save_digidoc_message(text_content)
+        # save_digidoc_message(text_content)
 
-<<<<<<< HEAD
         translated_messages = []
+        # all_messages = Message.objects.all()
     
         for message in text_content:
             print(message)
@@ -1206,41 +1109,6 @@ def send_condition(request):
         save_mcq_text(target_language_code, api_response)
         form = MultipleChoiceForm()
         return render(request, 'chat.html', {'messages': translated_messages, 'form': form})
-        all_messages = Message.objects.all()
-        for message in all_messages:
-            print(message.content)
-
-=======
-        all_messages = Message.objects.all()
-        for message in all_messages:
-            print(message.content)
-
->>>>>>> parent of b9175b9 (Create methods for saving mcqs and single choices depending on text/label and integrate translation)
-        list_of_choices = []
-        list_of_choices.append(api_response.get('question', {}).get('choices' , []))
-
-        conversation_id = api_response.get('conversation', {}).get('id' , None)
-
-        print("CHOICES")
-        print(list_of_choices)
-        for sublist in list_of_choices:
-            for choice in sublist:
-                # Extracts choice id and label
-                choice_id = choice['id']
-                print("CHOICE ID")
-                print(choice_id)
-                choice_label = choice['text']
-                print("CHOICE LABEL")
-                print(choice_label)
-                # selected = True
-                choice_conversation_id = conversation_id
-        
-                # Create  object and save to database
-                chosen_option = MultipleChoice(choice_id=choice_id, name=choice_label, conversation_id=choice_conversation_id)
-                chosen_option.full_clean()
-                chosen_option.save()
-            form = MultipleChoiceForm()
-        return render(request, 'chat.html', {'messages': all_messages, 'form': form})
     else:
         form = MultipleChoiceForm()
     return render(request, 'chat.html', {'form': form})
@@ -1249,8 +1117,10 @@ def send_next(request):
     response_data = Chat()
     html = 'chat.html'
     if request.method == 'POST': 
+        target_language_code = get_language_used()
+        print(target_language_code)
         print("POST -- send_next")        
-
+        
         form = MultipleChoiceForm(request.POST)
         selected_symptoms_ids = []
         selected_symptoms_name = []
@@ -1265,21 +1135,20 @@ def send_next(request):
                 # Retrieves the symptom's choice_ID from the MultipleChoice object and append it to the list
                 selected_symptoms_ids.append(symptom.choice_id)
             print(str(selected_symptoms_ids))
-            conversation_id = (ConversationId.objects.get()).conversation_id
+            conversation_id = MultipleChoice.objects.get(choice_id=selected_symptoms_ids[0]).conversation_id
             print("convo id")
             print(conversation_id)
             print("selected_symptoms_name")
             print(str(selected_symptoms_name))
-<<<<<<< HEAD
-
-=======
->>>>>>> parent of b9175b9 (Create methods for saving mcqs and single choices depending on text/label and integrate translation)
-            content = "I confirm that I have the following symptom(s): " + str(selected_symptoms_name)
-            timestamp = request.POST.get('timestamp')
-            save_user_message(content, timestamp)
+            # content = "I confirm that I have the following symptom(s): " + str(selected_symptoms_name)
+            # timestamp = request.POST.get('timestamp')
+            # save_user_message(content, timestamp)
             MultipleChoice.objects.all().delete()
             SingleChoice.objects.all().delete()
-
+        # response_data.set_condition_confirmation_in_formatted_input(selected_symptoms_ids, conversation_id)
+            # previous_question_type = (APIResponse.objects.get()).question_type
+            # question_type = api_response.get('question', {}).get('type')
+            
             response_data.set_condition_confirmation_in_formatted_input(selected_symptoms_ids, conversation_id)
            
            
@@ -1287,11 +1156,9 @@ def send_next(request):
         print(response.json())
         api_response = response.json()
         APIResponse.objects.all().delete()
-        save_APIResponse(api_response)
-        api_response_database = APIResponse.objects.get()
-
-        phase = api_response_database.phase
-        question_type = api_response_database.question_type
+        phase = get_phase_from_api_response(api_response)
+        question_type = get_question_type_from_api_response(api_response)
+        save_APIResponse(phase, question_type)
 
         template_name = get_template_for_phase(phase)
 
@@ -1302,21 +1169,22 @@ def send_next(request):
         print("MESSAGES")
         print(messages)
         # check the type of message
+        message_type = api_response.get('question', {}).get('type' , [])
         print("MESSAGE TYPE")
-        print(question_type)
-        if question_type == 'generic':
+        print(message_type)
+        if message_type == 'generic':
             text_content = [msg['value'] for sublist in messages for msg in sublist if msg.get('type') == 'generic']
             print("text content")
             print(text_content)
-        elif question_type == 'health_background':
+        elif message_type == 'health_background':
             text_content = [msg['text'] for sublist in messages for msg in sublist if msg.get('type') == 'health_background']
             print("text content")
             print(text_content)
-        elif question_type == 'symptoms':
+        elif message_type == 'symptoms':
             text_content = [msg['text'] for sublist in messages for msg in sublist if msg.get('type') == 'text']
             print("text content symptoms")
             print(text_content)
-        elif question_type == 'symptom':
+        elif message_type == 'symptom':
             text_content = [msg['text'] for sublist in messages for msg in sublist if msg.get('type') == 'text']
             print("text content symptom")
             print(text_content)
@@ -1324,8 +1192,10 @@ def send_next(request):
         else :
             text_content = "No content"
 
-<<<<<<< HEAD
+        # save_digidoc_message(text_content)
+
         translated_messages = []
+        # all_messages = Message.objects.all()
     
         for message in text_content:
             print(message)
@@ -1335,15 +1205,6 @@ def send_next(request):
         print(translated_messages)
         # save_mcq_text(target_language_code, api_response)
 
-        save_digidoc_message(text_content)
-
-=======
-        save_digidoc_message(text_content)
-
->>>>>>> parent of b9175b9 (Create methods for saving mcqs and single choices depending on text/label and integrate translation)
-        all_messages = Message.objects.all()
-        for message in all_messages:
-            print(message.content)
 
         list_of_choices = []
         list_of_choices.append(api_response.get('question', {}).get('choices' , []))
@@ -1367,34 +1228,12 @@ def send_next(request):
                 form = SingleChoiceForm()
                 print("Choose 1!!!")
                 html = 'chat.html'
-                for sublist in list_of_choices:
-                    for choice in sublist:
-                        # Extracts choice id and label
-                        choice_id = choice['id']
-                        choice_label = choice['text']
-                        # selected = True
-                        choice_conversation_id = conversation_id
-                
-                        # Create Symptom object and save to database
-                        chosen_option = SingleChoice(choice_id=choice_id, label=choice_label, conversation_id=choice_conversation_id)
-                        chosen_option.full_clean()
-                        chosen_option.save()
+                save_choices_text(target_language_code, api_response)
             else:
                 form = MultipleChoiceForm()
                 print("Multiple choice!!!!")
                 html = 'chat.html'
-                for sublist in list_of_choices:
-                    for choice in sublist:
-                        # Extracts choice id and label
-                        choice_id = choice['id']
-                        choice_label = choice['text']
-                        # selected = True
-                        choice_conversation_id = conversation_id
-                
-                        # Create Symptom object and save to database
-                        chosen_option = MultipleChoice(choice_id=choice_id, name=choice_label, conversation_id=choice_conversation_id)
-                        chosen_option.full_clean()
-                        chosen_option.save()
+                save_mcq_text(target_language_code, api_response)
         else:
             print("max_selections DOESNT exist")
             form = SingleChoiceForm()
@@ -1418,16 +1257,17 @@ def send_next(request):
                     chosen_option.full_clean()
                     chosen_option.save()
     
-        return render(request, html, {'messages': all_messages, 'form': form})
+        return render(request, html, {'messages': translated_messages, 'form': form})
     else:
         form = MultipleChoiceForm()
     return render(request, html, {'form': form})
 
-def send_next2(request):
-    
+def send_next2(request): 
     response_data = Chat()
     html = 'chat.html'
     if request.method == 'POST': 
+        target_language_code = get_language_used()
+        print(target_language_code)
         print("POST -- send_next2")        
         APIResponse.objects.all().delete()
         form = SingleChoiceForm(request.POST)
@@ -1441,18 +1281,14 @@ def send_next2(request):
             # Retrieves the choice ID from the choice object and append it to the list
             selected_choice_id.append(choice.choice_id)
             print(str(selected_choice_id))
-            conversation_id = (ConversationId.objects.get()).conversation_id
+            conversation_id = SingleChoice.objects.get(choice_id=selected_choice_id[0]).conversation_id
             print("convo id")
             print(conversation_id)
             print("selected_choice_name")
             print(str(selected_choice_label))
-<<<<<<< HEAD
-
-=======
->>>>>>> parent of b9175b9 (Create methods for saving mcqs and single choices depending on text/label and integrate translation)
-            content = "I confirm that I have the following symptom(s): " + str(selected_choice_label)
-            timestamp = request.POST.get('timestamp')
-            save_user_message(content, timestamp)
+            # content = "I confirm that I have the following symptom(s): " + str(selected_choice_label)
+            # timestamp = request.POST.get('timestamp')
+            # save_user_message(content, timestamp)
             MultipleChoice.objects.all().delete()
             SingleChoice.objects.all().delete()
             
@@ -1462,11 +1298,9 @@ def send_next2(request):
         print(response.json())
         api_response = response.json()
 
-        save_APIResponse(api_response)
-        api_response_database = APIResponse.objects.get()
-
-        phase = api_response_database.phase
-        question_type = api_response_database.question_type
+        phase = get_phase_from_api_response(api_response)
+        question_type = get_question_type_from_api_response(api_response)
+        save_APIResponse(phase, question_type)
 
         template_name = get_template_for_phase(phase)
        
@@ -1477,33 +1311,32 @@ def send_next2(request):
         print("MESSAGES")
         print(messages)
         # check the type of message
-        # message_type = api_response.get('question', {}).get('type' , [])
+        message_type = api_response.get('question', {}).get('type' , [])
         print("MESSAGE TYPE")
-        print(question_type)
-        if question_type == 'generic':
+        print(message_type)
+        if message_type == 'generic':
             text_content = [msg['value'] for sublist in messages for msg in sublist if msg.get('type') == 'generic']
             print("text content")
             print(text_content)
-        elif question_type == 'health_background':
+        elif message_type == 'health_background':
             text_content = [msg['text'] for sublist in messages for msg in sublist if msg.get('type') == 'health_background']
             print("text content")
             print(text_content)
-        elif question_type == 'symptoms':
+        elif message_type == 'symptoms':
             text_content = [msg['text'] for sublist in messages for msg in sublist if msg.get('type') == 'text']
             print("text content symptoms")
             print(text_content)
-        elif question_type == 'symptom':
+        elif message_type == 'symptom':
             text_content = [msg['text'] for sublist in messages for msg in sublist if msg.get('type') == 'text']
             print("text content symptom")
             print(text_content)
         
         else :
             text_content = "No content"
-<<<<<<< HEAD
-
-        save_digidoc_message(text_content)
+        # save_digidoc_message(text_content)
 
         translated_messages = []
+        # all_messages = Message.objects.all()
     
         for message in text_content:
             print(message)
@@ -1511,14 +1344,6 @@ def send_next2(request):
             translated_messages.append(translate(target_language_code, message))
     
         print(translated_messages)
-=======
-
-        save_digidoc_message(text_content)
-
->>>>>>> parent of b9175b9 (Create methods for saving mcqs and single choices depending on text/label and integrate translation)
-        all_messages = Message.objects.all()
-        for message in all_messages:
-            print(message.content)
 
         list_of_choices = []
         list_of_choices.append(api_response.get('question', {}).get('choices' , []))
@@ -1530,39 +1355,18 @@ def send_next2(request):
         if 'constraints' in api_response['question'] and 'max_selections' in api_response['question']['constraints']:
             # max_selections_exist = true
             max_selections = api_response['question']['constraints']['max_selections']
+ 
 
             if (max_selections == 1):
                 form = SingleChoiceForm()
                 print("Choose 1!!!")
                 html = 'chat.html'
-                for sublist in list_of_choices:
-                    for choice in sublist:
-                        # Extracts choice id and label
-                        choice_id = choice['id']
-                        choice_label = choice['text']
-                        # selected = True
-                        choice_conversation_id = conversation_id
-                
-                        # Create Symptom object and save to database
-                        chosen_option = SingleChoice(choice_id=choice_id, label=choice_label, conversation_id=choice_conversation_id)
-                        chosen_option.full_clean()
-                        chosen_option.save()
+                save_choices_text(target_language_code, api_response)
             else:
                 form = MultipleChoiceForm()
                 print("Multiple choice!!!!")
                 html = 'chat.html'
-                for sublist in list_of_choices:
-                    for choice in sublist:
-                        # Extracts choice id and label
-                        choice_id = choice['id']
-                        choice_label = choice['text']
-                        # selected = True
-                        choice_conversation_id = conversation_id
-                
-                        # Create Symptom object and save to database
-                        chosen_option = MultipleChoice(choice_id=choice_id, name=choice_label, conversation_id=choice_conversation_id)
-                        chosen_option.full_clean()
-                        chosen_option.save()
+                save_mcq_text(target_language_code, api_response)
         else:
             form = SingleChoiceForm()
             html = 'chat.html'
@@ -1585,7 +1389,7 @@ def send_next2(request):
                     chosen_option.full_clean()
                     chosen_option.save()
         
-        return render(request, html, {'messages': all_messages, 'form': form})
+        return render(request, html, {'messages': translated_messages, 'form': form})
     else:
         form = MultipleChoiceForm()
     return render(request, 'chat.html', {'form': form})
@@ -1596,6 +1400,8 @@ def send_final(request):
     response_data = Chat()
     html = 'report_summary.html'
     if request.method == 'POST': 
+        target_language_code = get_language_used()
+        print(target_language_code)
         print("POST -- send_final")        
         APIResponse.objects.all().delete()
         form = SingleChoiceForm(request.POST)
@@ -1609,18 +1415,14 @@ def send_final(request):
             # Retrieves the choice ID from the choice object and append it to the list
             selected_choice_id.append(choice.choice_id)
             print(str(selected_choice_id))
-            conversation_id = (ConversationId.objects.get()).conversation_id
+            conversation_id = SingleChoice.objects.get(choice_id=selected_choice_id[0]).conversation_id
             print("convo id")
             print(conversation_id)
             print("selected_choice_name")
             print(str(selected_choice_label))
-<<<<<<< HEAD
-
-=======
->>>>>>> parent of b9175b9 (Create methods for saving mcqs and single choices depending on text/label and integrate translation)
-            content = "I confirm that I have the following symptom(s): " + str(selected_choice_label)
-            timestamp = request.POST.get('timestamp')
-            save_user_message(content, timestamp)
+            # content = "I confirm that I have the following symptom(s): " + str(selected_choice_label)
+            # timestamp = request.POST.get('timestamp')
+            # save_user_message(content, timestamp)
             MultipleChoice.objects.all().delete()
             SingleChoice.objects.all().delete()
             
@@ -1630,11 +1432,9 @@ def send_final(request):
         print(response.json())
         api_response = response.json()
 
-        save_APIResponse(api_response)
-        api_response_database = APIResponse.objects.get()
-
-        phase = api_response_database.phase
-        question_type = api_response_database.question_type
+        phase = get_phase_from_api_response(api_response)
+        question_type = get_question_type_from_api_response(api_response)
+        save_APIResponse(phase, question_type)
 
         template_name = get_template_for_phase(phase)
 
@@ -1693,10 +1493,10 @@ def send_final(request):
             text_content = [msg['value'] for sublist in messages for msg in sublist if msg.get('type') == 'generic']
             print("text content")
             print(text_content)
-        save_digidoc_message(text_content)
+        # save_digidoc_message(text_content)
 
-<<<<<<< HEAD
         translated_messages = []
+        # all_messages = Message.objects.all()
     
         for message in text_content:
             print(message)
@@ -1706,33 +1506,6 @@ def send_final(request):
         print(translated_messages)
 
         save_choices_label(target_language_code, api_response)
-        all_messages = Message.objects.all()
-        for message in all_messages:
-            print(message.content)
-
-=======
-        all_messages = Message.objects.all()
-        for message in all_messages:
-            print(message.content)
-
->>>>>>> parent of b9175b9 (Create methods for saving mcqs and single choices depending on text/label and integrate translation)
-        list_of_choices = []
-        list_of_choices.append(api_response.get('question', {}).get('choices' , []))
-
-        conversation_id = api_response.get('conversation', {}).get('id' , None)
-
-        for sublist in list_of_choices:
-            for choice in sublist:
-                # Extracts choice id and label
-                choice_id = choice['id']
-                choice_label = choice['label']
-                # selected = True
-                choice_conversation_id = conversation_id
-        
-                # Create Symptom object and save to database
-                chosen_option = SingleChoice(choice_id=choice_id, label=choice_label, conversation_id=choice_conversation_id)
-                chosen_option.full_clean()
-                chosen_option.save()
         context = {
                 'text_content': text_content, 
                 'form':form, 
@@ -1751,14 +1524,15 @@ def send_final(request):
                 'health_background_conditions': health_background_conditions_list,
                 'timestamp': timestamp
         }
-
         return render(request, html, context)
+
 def send_final_continue(request):
     print("POST -- send_final_continue")
     response_data = Chat()
     html = 'report.html'
     if request.method == 'POST': 
-        print("POST -- send_final")        
+        target_language_code = get_language_used()
+        print(target_language_code)       
         APIResponse.objects.all().delete()
         form = SingleChoiceForm(request.POST)
         selected_choice_id = []
@@ -1771,18 +1545,14 @@ def send_final_continue(request):
             # Retrieves the choice ID from the choice object and append it to the list
             selected_choice_id.append(choice.choice_id)
             print(str(selected_choice_id))
-            conversation_id = (ConversationId.objects.get()).conversation_id
+            conversation_id = SingleChoice.objects.get(choice_id=selected_choice_id[0]).conversation_id
             print("convo id")
             print(conversation_id)
             print("selected_choice_name")
             print(str(selected_choice_label))
-<<<<<<< HEAD
-
-=======
->>>>>>> parent of b9175b9 (Create methods for saving mcqs and single choices depending on text/label and integrate translation)
-            content = "I confirm that I have the following symptom(s): " + str(selected_choice_label)
-            timestamp = request.POST.get('timestamp')
-            save_user_message(content, timestamp)
+            # content = "I confirm that I have the following symptom(s): " + str(selected_choice_label)
+            # timestamp = request.POST.get('timestamp')
+            # save_user_message(content, timestamp)
             MultipleChoice.objects.all().delete()
             SingleChoice.objects.all().delete()
             
@@ -1792,11 +1562,9 @@ def send_final_continue(request):
         print(response.json())
         api_response = response.json()
 
-        save_APIResponse(api_response)
-        api_response_database = APIResponse.objects.get()
-
-        phase = api_response_database.phase
-        question_type = api_response_database.question_type
+        phase = get_phase_from_api_response(api_response)
+        question_type = get_question_type_from_api_response(api_response)
+        save_APIResponse(phase, question_type)
 
         template_name = get_template_for_phase(phase)
 
@@ -1807,24 +1575,8 @@ def send_final_continue(request):
         print("MESSAGES")
         print(messages)
         text_content = [msg['value'] for sublist in messages for msg in sublist if msg.get('type') == 'generic']
-        save_digidoc_message(text_content)
-        list_of_choices = []
-        list_of_choices.append(api_response.get('question', {}).get('choices' , []))
-
-        conversation_id = api_response.get('conversation', {}).get('id' , None)
-
-        for sublist in list_of_choices:
-            for choice in sublist:
-                # Extracts choice id and label
-                choice_id = choice['id']
-                choice_label = choice['label']
-                # selected = True
-                choice_conversation_id = conversation_id
-        
-                # Create Symptom object and save to database
-                chosen_option = SingleChoice(choice_id=choice_id, label=choice_label, conversation_id=choice_conversation_id)
-                chosen_option.full_clean()
-                chosen_option.save()
+        # save_digidoc_message(text_content)
+        save_choices_label(target_language_code, api_response)
     return render(request, html, {'text_content':text_content, 'form':form})
 
 def see_articles(request):

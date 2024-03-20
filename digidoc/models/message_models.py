@@ -43,22 +43,8 @@ class SingleChoice(models.Model):
         return self.label
 
 class APIResponse(models.Model):
-    conversation_id = models.CharField(max_length=1000)
-    scenario = models.CharField(max_length=100)
     phase = models.CharField(max_length=100)
-    progress_stage = models.CharField(max_length=100)
-    progress_percentage =models.IntegerField()
-    step_back_possible = models.BooleanField(default=False)
-    has_contraints = models.BooleanField(default=False)
-    min_constraints = models.IntegerField(null=True)
-    max_constraints = models.IntegerField(null=True)
-    question_type = models.CharField(max_length=100, null=True)
-    message_type =  models.CharField(max_length=100, null=True)
-    mandatory = models.BooleanField(default=False)
-    multiple = models.BooleanField(default=False)
-    def __str__(self):
-        return self.conversation_id
-
+    question_type = models.CharField(max_length=100)
 
 class TextInput(models.Model):
     symptom_name = models.CharField(max_length=1000)
