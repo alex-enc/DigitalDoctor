@@ -207,6 +207,7 @@ def save_conditions(api_response):
             condition.full_clean()
             condition.save()
 
+<<<<<<< HEAD
 def save_APIResponse(api_response):
     # conversation_id = api_response['conversation']['id']
     scenario = api_response['conversation']['scenario']
@@ -246,6 +247,10 @@ def save_APIResponse(api_response):
         mandatory=mandatory,
         multiple=multiple
         )
+=======
+def save_APIResponse(phase, question_type):
+    response = APIResponse(phase=phase, question_type=question_type)
+>>>>>>> parent of b9175b9 (Create methods for saving mcqs and single choices depending on text/label and integrate translation)
     response.full_clean()
     response.save()
 
@@ -382,15 +387,21 @@ def new_chat(request):
     print("text content")
     print(text_content)
     translated_messages = []
+<<<<<<< HEAD
 
+=======
+>>>>>>> parent of b9175b9 (Create methods for saving mcqs and single choices depending on text/label and integrate translation)
     save_digidoc_message(text_content)
     for message in text_content:
         print(message)
         print(translate(target_language_code, message))
         translated_messages.append(translate(target_language_code, message))
+<<<<<<< HEAD
 
     # all_messages = Message.objects.all()
 
+=======
+>>>>>>> parent of b9175b9 (Create methods for saving mcqs and single choices depending on text/label and integrate translation)
     conversation_id = api_response.get('conversation', {}).get('id' , None)
     save_conversationID(conversation_id)
     all_messages = Message.objects.all()
@@ -560,7 +571,10 @@ def send_on_boarding(request):
                     chosen_option.full_clean()
                     chosen_option.save()
             form = SingleChoiceForm()
+<<<<<<< HEAD
         return render(request, template_name, {'messages': translated_messages, 'form': form})
+=======
+>>>>>>> parent of b9175b9 (Create methods for saving mcqs and single choices depending on text/label and integrate translation)
         # return api_response
         return render(request, template_name, {'messages': all_messages, 'form': form})
 
@@ -628,6 +642,7 @@ def send_symptom_confirmation(request):
         else :
             text_content = "No content"
 
+<<<<<<< HEAD
         translated_messages = []
     
         for message in text_content:
@@ -637,9 +652,18 @@ def send_symptom_confirmation(request):
     
         print(translated_messages)
         save_mcq_label(target_language_code, api_response)
+=======
+        save_digidoc_message(text_content)
 
-        save_choices_label(target_language_code, api_response)
+        all_messages = Message.objects.all()
+        # for message in all_messages:
+        #     print(message.content)
+>>>>>>> parent of b9175b9 (Create methods for saving mcqs and single choices depending on text/label and integrate translation)
 
+        list_of_choices = []
+        list_of_choices.append(api_response.get('question', {}).get('choices' , []))
+
+<<<<<<< HEAD
         save_digidoc_message(text_content)
 
         all_messages = Message.objects.all()
@@ -649,6 +673,8 @@ def send_symptom_confirmation(request):
         list_of_choices = []
         list_of_choices.append(api_response.get('question', {}).get('choices' , []))
 
+=======
+>>>>>>> parent of b9175b9 (Create methods for saving mcqs and single choices depending on text/label and integrate translation)
         conversation_id = api_response.get('conversation', {}).get('id' , None)
 
         print("CHOICES")
@@ -741,6 +767,7 @@ def submit_choice(request):
             print("text content")
             print(text_content)
 
+<<<<<<< HEAD
         translated_messages = []
     
         for message in text_content:
@@ -749,6 +776,11 @@ def submit_choice(request):
             translated_messages.append(translate(target_language_code, message))
     
         save_digidoc_message(text_content)
+=======
+        save_digidoc_message(text_content)
+
+        all_messages = Message.objects.all()
+>>>>>>> parent of b9175b9 (Create methods for saving mcqs and single choices depending on text/label and integrate translation)
 
         all_messages = Message.objects.all()
 
@@ -760,22 +792,31 @@ def submit_choice(request):
             # Accessing the articles
             articles = api_response['report']['articles']
             request.session['articles'] = json.dumps(articles)
+<<<<<<< HEAD
             return render(request, 'end_of_chat.html', {'messages': translated_messages, 'form': form})
         elif (phase=='clarify'):
+=======
+>>>>>>> parent of b9175b9 (Create methods for saving mcqs and single choices depending on text/label and integrate translation)
             return render(request, 'end_of_chat.html', {'messages': all_messages, 'form': form})
         elif (phase_value=='clarify'):
             MultipleChoice.objects.all().delete()
             save_symptoms(api_response)
             form = MultipleChoiceForm()
+<<<<<<< HEAD
             return render(request, 'chat.html', {'messages': translated_messages,'form': form})
         elif (phase=='health_background'):
+=======
+>>>>>>> parent of b9175b9 (Create methods for saving mcqs and single choices depending on text/label and integrate translation)
             return render(request, 'chat.html', {'messages': all_messages,'form': form})
         elif (phase_value=='health_background'):
             MultipleChoice.objects.all().delete()
             save_conditions(api_response)
             form = MultipleChoiceForm()
+<<<<<<< HEAD
             return render(request, 'chat.html', {'messages': translated_messages,'form': form})
         elif (phase=='autocomplete_add'):
+=======
+>>>>>>> parent of b9175b9 (Create methods for saving mcqs and single choices depending on text/label and integrate translation)
             return render(request, 'chat.html', {'messages': all_messages,'form': form})
         elif (phase_value=='autocomplete_add'):
             SingleChoice.objects.all().delete()
@@ -946,6 +987,7 @@ def autocomplete_post(request):
 
         translated_messages = []
 
+<<<<<<< HEAD
         for message in text_content:
             print(message)
             print(translate(target_language_code, message))
@@ -956,6 +998,11 @@ def autocomplete_post(request):
         list_of_choices = []
         list_of_choices.append(api_response.get('question', {}).get('choices' , []))
 
+=======
+        list_of_choices = []
+        list_of_choices.append(api_response.get('question', {}).get('choices' , []))
+
+>>>>>>> parent of b9175b9 (Create methods for saving mcqs and single choices depending on text/label and integrate translation)
         conversation_id = api_response.get('conversation', {}).get('id' , None)
 
         print("CHOICES")
@@ -1091,7 +1138,10 @@ def send_condition(request):
             print(conversation_id)
             print("selected_condition_name")
             print(str(selected_condition_name))
+<<<<<<< HEAD
 
+=======
+>>>>>>> parent of b9175b9 (Create methods for saving mcqs and single choices depending on text/label and integrate translation)
             content = "I confirm that I have the following condition(s): " + str(selected_condition_name)
             timestamp = request.POST.get('timestamp')
             save_user_message(content, timestamp)
@@ -1143,6 +1193,7 @@ def send_condition(request):
         # print(text_content)
         save_digidoc_message(text_content)
 
+<<<<<<< HEAD
         translated_messages = []
     
         for message in text_content:
@@ -1159,6 +1210,12 @@ def send_condition(request):
         for message in all_messages:
             print(message.content)
 
+=======
+        all_messages = Message.objects.all()
+        for message in all_messages:
+            print(message.content)
+
+>>>>>>> parent of b9175b9 (Create methods for saving mcqs and single choices depending on text/label and integrate translation)
         list_of_choices = []
         list_of_choices.append(api_response.get('question', {}).get('choices' , []))
 
@@ -1213,7 +1270,10 @@ def send_next(request):
             print(conversation_id)
             print("selected_symptoms_name")
             print(str(selected_symptoms_name))
+<<<<<<< HEAD
 
+=======
+>>>>>>> parent of b9175b9 (Create methods for saving mcqs and single choices depending on text/label and integrate translation)
             content = "I confirm that I have the following symptom(s): " + str(selected_symptoms_name)
             timestamp = request.POST.get('timestamp')
             save_user_message(content, timestamp)
@@ -1264,6 +1324,7 @@ def send_next(request):
         else :
             text_content = "No content"
 
+<<<<<<< HEAD
         translated_messages = []
     
         for message in text_content:
@@ -1276,6 +1337,10 @@ def send_next(request):
 
         save_digidoc_message(text_content)
 
+=======
+        save_digidoc_message(text_content)
+
+>>>>>>> parent of b9175b9 (Create methods for saving mcqs and single choices depending on text/label and integrate translation)
         all_messages = Message.objects.all()
         for message in all_messages:
             print(message.content)
@@ -1381,7 +1446,10 @@ def send_next2(request):
             print(conversation_id)
             print("selected_choice_name")
             print(str(selected_choice_label))
+<<<<<<< HEAD
 
+=======
+>>>>>>> parent of b9175b9 (Create methods for saving mcqs and single choices depending on text/label and integrate translation)
             content = "I confirm that I have the following symptom(s): " + str(selected_choice_label)
             timestamp = request.POST.get('timestamp')
             save_user_message(content, timestamp)
@@ -1431,6 +1499,7 @@ def send_next2(request):
         
         else :
             text_content = "No content"
+<<<<<<< HEAD
 
         save_digidoc_message(text_content)
 
@@ -1442,6 +1511,11 @@ def send_next2(request):
             translated_messages.append(translate(target_language_code, message))
     
         print(translated_messages)
+=======
+
+        save_digidoc_message(text_content)
+
+>>>>>>> parent of b9175b9 (Create methods for saving mcqs and single choices depending on text/label and integrate translation)
         all_messages = Message.objects.all()
         for message in all_messages:
             print(message.content)
@@ -1540,7 +1614,10 @@ def send_final(request):
             print(conversation_id)
             print("selected_choice_name")
             print(str(selected_choice_label))
+<<<<<<< HEAD
 
+=======
+>>>>>>> parent of b9175b9 (Create methods for saving mcqs and single choices depending on text/label and integrate translation)
             content = "I confirm that I have the following symptom(s): " + str(selected_choice_label)
             timestamp = request.POST.get('timestamp')
             save_user_message(content, timestamp)
@@ -1618,6 +1695,7 @@ def send_final(request):
             print(text_content)
         save_digidoc_message(text_content)
 
+<<<<<<< HEAD
         translated_messages = []
     
         for message in text_content:
@@ -1632,6 +1710,12 @@ def send_final(request):
         for message in all_messages:
             print(message.content)
 
+=======
+        all_messages = Message.objects.all()
+        for message in all_messages:
+            print(message.content)
+
+>>>>>>> parent of b9175b9 (Create methods for saving mcqs and single choices depending on text/label and integrate translation)
         list_of_choices = []
         list_of_choices.append(api_response.get('question', {}).get('choices' , []))
 
@@ -1692,7 +1776,10 @@ def send_final_continue(request):
             print(conversation_id)
             print("selected_choice_name")
             print(str(selected_choice_label))
+<<<<<<< HEAD
 
+=======
+>>>>>>> parent of b9175b9 (Create methods for saving mcqs and single choices depending on text/label and integrate translation)
             content = "I confirm that I have the following symptom(s): " + str(selected_choice_label)
             timestamp = request.POST.get('timestamp')
             save_user_message(content, timestamp)
