@@ -37,19 +37,15 @@ class SingleChoice(models.Model):
         return self.label
 
 class APIResponse(models.Model):
-    conversation_id = models.CharField(max_length=1000)
     scenario = models.CharField(max_length=100)
     phase = models.CharField(max_length=100)
     progress_stage = models.CharField(max_length=100)
     progress_percentage =models.IntegerField()
     step_back_possible = models.BooleanField(default=False)
-    has_contraints = models.BooleanField(default=False)
-    min_constraints = models.IntegerField(null=True)
-    max_constraints = models.IntegerField(null=True)
+    has_constraints = models.BooleanField(default=False)
     question_type = models.CharField(max_length=100, null=True)
-    message_type =  models.CharField(max_length=100, null=True)
-    mandatory = models.BooleanField(default=False)
-    multiple = models.BooleanField(default=False)
+    mandatory = models.BooleanField(null=True)
+    multiple = models.BooleanField(null=True)
     def __str__(self):
         return self.conversation_id
 
@@ -64,10 +60,10 @@ class HealthBackground(models.Model):
     def __str__(self):
         return self.condition_id
 
-# class ConversationId(models.Model):
-#     conversation_id = models.CharField(max_length=1000)
-#     def __str__(self):
-#         return self.conversation_id
+class ConversationId(models.Model):
+    conversation_id = models.CharField(max_length=1000)
+    def __str__(self):
+        return self.conversation_id
 
 class Language(models.Model):
     language = models.CharField(max_length=1000)

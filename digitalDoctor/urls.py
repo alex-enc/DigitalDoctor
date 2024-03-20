@@ -16,9 +16,8 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from digidoc.views import chat_view, home_view
-from django.conf.urls.i18n import i18n_patterns
 
-urlpatterns = i18n_patterns(
+urlpatterns = (
     path('admin/', admin.site.urls),
     path('', home_view.home, name='home'),
     path('chat/', chat_view.main_chat, name='main_chat'),
