@@ -536,6 +536,7 @@ def send_on_boarding(request):
         messages = []
         messages.append(api_response.get('question', {}).get('messages' , []))
        
+        step_back_possible = api_response.get('conversation', {}).get('step_back_possible' , [])
         # Check if mandatory and multiple fields are true
         mandatory = api_response.get('question', {}).get('mandatory' , [])
         multiple = api_response.get('question', {}).get('multiple' , [])
@@ -567,7 +568,7 @@ def send_on_boarding(request):
         else:
             save_choices_label(target_language_code,api_response)
             form = SingleChoiceForm()
-        return render(request, template_name, {'messages': translated_messages, 'form': form})
+        return render(request, template_name, {'messages': translated_messages, 'form': form, 'step_back_possible':step_back_possible})
 
 def send_symptom_confirmation(request):
     response_data = Chat()
@@ -610,6 +611,8 @@ def send_symptom_confirmation(request):
 
         template_name = get_template_for_phase(phase)
 
+        step_back_possible = api_response.get('conversation', {}).get('step_back_possible' , [])
+        print(step_back_possible)
         # saves api response as messages
         messages = []
         messages.append(api_response.get('question', {}).get('messages' , []))
@@ -646,7 +649,7 @@ def send_symptom_confirmation(request):
         # return render(request, 'chat.html', {'messages': all_messages, 'form': form})
     else:
         form = MultipleChoiceForm()
-    return render(request, 'chat.html', {'messages': translated_messages, 'form': form})
+    return render(request, 'chat.html', {'messages': translated_messages, 'form': form, 'step_back_possible':step_back_possible})
 
 def submit_choice(request):
     response_data = Chat()
@@ -690,6 +693,7 @@ def submit_choice(request):
           
         else:
             print("NO")
+        step_back_possible = api_response.get('conversation', {}).get('step_back_possible' , [])
         # saves api response as messages
         messages = []
         messages.append(api_response.get('question', {}).get('messages' , []))
@@ -733,17 +737,17 @@ def submit_choice(request):
             # Accessing the articles
             articles = api_response['report']['articles']
             request.session['articles'] = json.dumps(articles)
-            return render(request, 'end_of_chat.html', {'messages': translated_messages, 'form': form})
+            return render(request, 'end_of_chat.html', {'messages': translated_messages, 'form': form, 'step_back_possible':step_back_possible})
         elif (phase_value=='clarify'):
             MultipleChoice.objects.all().delete()
             save_mcq_label(target_language_code, api_response)
             form = MultipleChoiceForm()
-            return render(request, 'chat.html', {'messages': translated_messages,'form': form})
+            return render(request, 'chat.html', {'messages': translated_messages,'form': form, 'step_back_possible':step_back_possible})
         elif (phase_value=='health_background'):
             MultipleChoice.objects.all().delete()
             save_mcq_long_name(target_language_code,api_response)
             form = MultipleChoiceForm()
-            return render(request, 'chat.html', {'messages': translated_messages,'form': form})
+            return render(request, 'chat.html', {'messages': translated_messages,'form': form, 'step_back_possible':step_back_possible})
         elif (phase_value=='autocomplete_add'):
             SingleChoice.objects.all().delete()
             save_choices_text(target_language_code, api_response)
@@ -759,7 +763,7 @@ def submit_choice(request):
             pass
     else:
         form = MultipleChoiceForm()
-    return render(request, 'chat.html', {'form': form})
+    return render(request, 'chat.html', {'form': form, 'step_back_possible':step_back_possible})
 
 
 def add_symptom(request):
@@ -779,7 +783,6 @@ def add_symptom(request):
         form = TextInputForm(request.POST)
         if form.is_valid():
             form.save()
-            # return redirect('add_symptom')
             form1 = TextInputForm()
             symptoms_count = TextInput.objects.count()
             print("COUNT")
@@ -874,6 +877,8 @@ def autocomplete_post(request):
 
         else:
             print("NO")
+        step_back_possible = api_response.get('conversation', {}).get('step_back_possible' , [])
+        print(step_back_possible)
         # saves api response as messages
         messages = []
         messages.append(api_response.get('question', {}).get('messages' , []))
@@ -912,7 +917,7 @@ def autocomplete_post(request):
             translated_messages.append(translate(target_language_code, message))
 
             form = MultipleChoiceForm()
-        return render(request, 'chat.html', {'messages': translated_messages, 'form': form})
+        return render(request, 'chat.html', {'messages': translated_messages, 'form': form, 'step_back_possible':step_back_possible})
     else:
         form = MultipleChoiceForm()
     return render(request, 'chat.html', {'form': form})
@@ -948,9 +953,7 @@ def send_condition(request):
             print(conversation_id)
             print("selected_condition_name")
             print(str(selected_condition_name))
-            # content = "I confirm that I have the following condition(s): " + str(selected_condition_name)
-            # timestamp = request.POST.get('timestamp')
-            # save_user_message(content, timestamp)
+
             MultipleChoice.objects.all().delete()
 
             response_data.set_condition_confirmation_in_formatted_input(selected_condition_ids, conversation_id)
@@ -967,6 +970,9 @@ def send_condition(request):
 
         else:
             print("NO")
+
+        step_back_possible = api_response.get('conversation', {}).get('step_back_possible' , [])
+        print(step_back_possible)
         # saves api response as messages
         messages = []
         messages.append(api_response.get('question', {}).get('messages' , []))
@@ -995,13 +1001,8 @@ def send_condition(request):
             text_content = "No content"
             print("text content")
             print(text_content)
-        # text_content = [msg['value'] for sublist in messages for msg in sublist if msg.get('type') == 'generic']
-        # print("text content")
-        # print(text_content)
-        # save_digidoc_message(text_content)
 
         translated_messages = []
-        # all_messages = Message.objects.all()
     
         for message in text_content:
             print(message)
@@ -1012,7 +1013,7 @@ def send_condition(request):
 
         save_mcq_text(target_language_code, api_response)
         form = MultipleChoiceForm()
-        return render(request, 'chat.html', {'messages': translated_messages, 'form': form})
+        return render(request, 'chat.html', {'messages': translated_messages, 'form': form, 'step_back_possible':step_back_possible})
     else:
         form = MultipleChoiceForm()
     return render(request, 'chat.html', {'form': form})
@@ -1044,9 +1045,7 @@ def send_next(request):
             print(conversation_id)
             print("selected_symptoms_name")
             print(str(selected_symptoms_name))
-            # content = "I confirm that I have the following symptom(s): " + str(selected_symptoms_name)
-            # timestamp = request.POST.get('timestamp')
-            # save_user_message(content, timestamp)
+
             MultipleChoice.objects.all().delete()
             SingleChoice.objects.all().delete()
         # response_data.set_condition_confirmation_in_formatted_input(selected_symptoms_ids, conversation_id)
@@ -1065,6 +1064,9 @@ def send_next(request):
         save_APIResponse(phase, question_type)
 
         template_name = get_template_for_phase(phase)
+
+        step_back_possible = api_response.get('conversation', {}).get('step_back_possible' , [])
+        print(step_back_possible)
 
         # saves api response as messages
         messages = []
@@ -1096,10 +1098,7 @@ def send_next(request):
         else :
             text_content = "No content"
 
-        # save_digidoc_message(text_content)
-
         translated_messages = []
-        # all_messages = Message.objects.all()
     
         for message in text_content:
             print(message)
@@ -1161,7 +1160,7 @@ def send_next(request):
                     chosen_option.full_clean()
                     chosen_option.save()
     
-        return render(request, html, {'messages': translated_messages, 'form': form})
+        return render(request, html, {'messages': translated_messages, 'form': form, 'step_back_possible':step_back_possible})
     else:
         form = MultipleChoiceForm()
     return render(request, html, {'form': form})
@@ -1190,9 +1189,7 @@ def send_next2(request):
             print(conversation_id)
             print("selected_choice_name")
             print(str(selected_choice_label))
-            # content = "I confirm that I have the following symptom(s): " + str(selected_choice_label)
-            # timestamp = request.POST.get('timestamp')
-            # save_user_message(content, timestamp)
+
             MultipleChoice.objects.all().delete()
             SingleChoice.objects.all().delete()
             
@@ -1208,6 +1205,9 @@ def send_next2(request):
 
         template_name = get_template_for_phase(phase)
        
+        step_back_possible = api_response.get('conversation', {}).get('step_back_possible' , [])
+        print(step_back_possible)
+
         # saves api response as messages
         messages = []
         messages.append(api_response.get('question', {}).get('messages' , []))
@@ -1237,10 +1237,8 @@ def send_next2(request):
         
         else :
             text_content = "No content"
-        # save_digidoc_message(text_content)
 
         translated_messages = []
-        # all_messages = Message.objects.all()
     
         for message in text_content:
             print(message)
@@ -1293,7 +1291,7 @@ def send_next2(request):
                     chosen_option.full_clean()
                     chosen_option.save()
         
-        return render(request, html, {'messages': translated_messages, 'form': form})
+        return render(request, html, {'messages': translated_messages, 'form': form, 'step_back_possible':step_back_possible})
     else:
         form = MultipleChoiceForm()
     return render(request, 'chat.html', {'form': form})
@@ -1338,19 +1336,10 @@ def send_final(request):
         question_type = get_question_type_from_api_response(api_response)
         save_APIResponse(phase, question_type)
 
-        # api_response_json_string = json.dumps(api_response)
-        # if target_language_code != 'en':
-        #     api_response_json_string = translate(target_language_code, api_response_json_string)
-        #     print("api_response_json_string")
-        #     print(api_response_json_string)
-            # Iterate over the dictionary and update values
-            # for key, value in api_response_json_string.items():
-            #     # Translate the value if it's not an integer
-            #     if not isinstance(value, int):
-            #         api_response_json_string[key] = translate(target_language_code, value)
-
         template_name = get_template_for_phase(phase)
 
+        step_back_possible = api_response.get('conversation', {}).get('step_back_possible' , [])
+        print(step_back_possible)
         # saves api response as messages
         messages = []
         messages.append(api_response.get('question', {}).get('messages' , []))
@@ -1469,7 +1458,8 @@ def send_final(request):
                 'unsure_symptoms': unsure_symptoms,
                 'user_profile': user_profile,
                 'health_background_conditions': health_background_conditions_list,
-                'timestamp': timestamp
+                'timestamp': timestamp,
+                'step_back_possible': step_back_possible
         }
         return render(request, html, context)
 
@@ -1497,9 +1487,7 @@ def send_final_continue(request):
             print(conversation_id)
             print("selected_choice_name")
             print(str(selected_choice_label))
-            # content = "I confirm that I have the following symptom(s): " + str(selected_choice_label)
-            # timestamp = request.POST.get('timestamp')
-            # save_user_message(content, timestamp)
+
             MultipleChoice.objects.all().delete()
             SingleChoice.objects.all().delete()
             
@@ -1515,6 +1503,10 @@ def send_final_continue(request):
 
         template_name = get_template_for_phase(phase)
 
+
+        step_back_possible = api_response.get('conversation', {}).get('step_back_possible' , [])
+        print(step_back_possible)
+
         # saves api response as messages
         messages = []
         messages.append(api_response.get('question', {}).get('messages' , []))
@@ -1522,9 +1514,9 @@ def send_final_continue(request):
         print("MESSAGES")
         print(messages)
         text_content = [msg['value'] for sublist in messages for msg in sublist if msg.get('type') == 'generic']
-        # save_digidoc_message(text_content)
+
         save_choices_label(target_language_code, api_response)
-    return render(request, html, {'text_content':text_content, 'form':form})
+    return render(request, html, {'text_content':text_content, 'form':form, 'step_back_possible':step_back_possible})
 
 def see_articles(request):
     articles = json.loads(request.session['articles'])
