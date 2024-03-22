@@ -7,11 +7,6 @@ from datetime import datetime, date
 from django import forms
 
 # Create your models here.
-class Message(models.Model):
-    sender = models.CharField(max_length=100)
-    content = models.TextField()
-    timestamp = models.DateTimeField(auto_now_add=True)
-
 def get_birth_year_choices():
     current_year = datetime.now().year
     # Calculates the minimum birth year allowed for 16 years old
@@ -66,9 +61,3 @@ class Language(models.Model):
     language_code = models.CharField(max_length=10)
     def __str__(self):
         return self.language_code
-# class Condition(models.Model):
-#     name = models.CharField(max_length=100)
-#     def __str__(self):
-#             return self.name
-#     condition_id = models.CharField(max_length=100)
-#     conversation_id = models.CharField(max_length=100)
