@@ -141,6 +141,7 @@ class Chat():
         }
 
         response = requests.get('https://portal.your.md/v4/search/symptoms', params=params, headers=self.headers)
+        print(params)
         return response.json()
 
     def set_autocomplete_post(self, selected_symptoms_ids, conversation_id):
@@ -523,7 +524,7 @@ def send_on_boarding(request):
             # save_user_message(content, timestamp)
 
         response_data.set_on_boarding_answers_in_formatted_input(on_boarding_answers.name, on_boarding_answers.birth_year, on_boarding_answers.initial_symptoms, on_boarding_answers.gender)
-
+        print(response_data.formatted_input)
         response = requests.post(response_data.url, json=response_data.formatted_input, headers=response_data.headers)
         print(response.json())
         api_response = response.json()
@@ -603,14 +604,11 @@ def send_symptom_confirmation(request):
             print(conversation_id)
             print("selected_symptoms_name")
             print(str(selected_symptoms_name))
-            # content = "I confirm that I have the following symptom(s): " + str(selected_symptoms_name)
-            # timestamp = request.POST.get('timestamp')
-            # save_user_message(content, timestamp)
 
 
         response_data.set_symptom_confirmation_in_formatted_input(selected_symptoms_ids, conversation_id)
-
         response = requests.post(response_data.url, json=response_data.formatted_input, headers=response_data.headers)
+        print(response_data.formatted_input)
         print(response.json())
         api_response = response.json()
 
@@ -694,6 +692,7 @@ def submit_choice(request):
             response_data.set_symptom_confirmation_in_formatted_input(selected_choice_id, conversation_id)
 
             response = requests.post(response_data.url, json=response_data.formatted_input, headers=response_data.headers)
+            print(response_data.formatted_input)
             print(response.json())
             api_response = response.json()
 
@@ -873,14 +872,15 @@ def autocomplete_post(request):
             print(conversation_id)
             print("selected_symptom_name")
             print(str(selected_symptom_name))
-            content = "I confirm that I have the following condition(s): " + str(selected_symptom_name)
-            timestamp = request.POST.get('timestamp')
-            save_user_message(content, timestamp)
+            # content = "I confirm that I have the following condition(s): " + str(selected_symptom_name)
+            # timestamp = request.POST.get('timestamp')
+            # save_user_message(content, timestamp)
             MultipleChoice.objects.all().delete()
 
             response_data.set_autocomplete_post(selected_symptom_ids, conversation_id)
             print(response_data.formatted_input)
             response = requests.post(response_data.url, json=response_data.formatted_input, headers=response_data.headers)
+            print(response_data.formatted_input)
             print(response.json())
             api_response = response.json()
 
@@ -923,7 +923,7 @@ def autocomplete_post(request):
         # text_content = [msg['value'] for sublist in messages for msg in sublist if msg.get('type') == 'generic']
         # print("text content")
         # print(text_content)
-        save_digidoc_message(text_content)
+        # save_digidoc_message(text_content)
 
         all_messages = Message.objects.all()
         for message in all_messages:
@@ -1244,11 +1244,11 @@ def send_next(request):
                     choice_id = choice['id']
                     if 'text' in choice:
                         # The choice uses 'text'
-                        choice_label = choice['text']
+                        choice_label = translate(target_language_code, choice['text'])
  
                     elif 'label' in choice:
                         # The choice uses 'label'
-                        choice_label = choice['label']
+                        choice_label = translate(target_language_code, choice['label'])
                     # selected = True
                     choice_conversation_id = conversation_id
             
@@ -1420,9 +1420,7 @@ def send_final(request):
             print(conversation_id)
             print("selected_choice_name")
             print(str(selected_choice_label))
-            # content = "I confirm that I have the following symptom(s): " + str(selected_choice_label)
-            # timestamp = request.POST.get('timestamp')
-            # save_user_message(content, timestamp)
+
             MultipleChoice.objects.all().delete()
             SingleChoice.objects.all().delete()
             
@@ -1436,6 +1434,17 @@ def send_final(request):
         question_type = get_question_type_from_api_response(api_response)
         save_APIResponse(phase, question_type)
 
+        # api_response_json_string = json.dumps(api_response)
+        # if target_language_code != 'en':
+        #     api_response_json_string = translate(target_language_code, api_response_json_string)
+        #     print("api_response_json_string")
+        #     print(api_response_json_string)
+            # Iterate over the dictionary and update values
+            # for key, value in api_response_json_string.items():
+            #     # Translate the value if it's not an integer
+            #     if not isinstance(value, int):
+            #         api_response_json_string[key] = translate(target_language_code, value)
+
         template_name = get_template_for_phase(phase)
 
         # saves api response as messages
@@ -1445,28 +1454,62 @@ def send_final(request):
         print("MESSAGES")
         print(messages)
 
-        consultation_triage = api_response['report']['summary']['consultation_triage']
-        print("CONSULTATION TRIAGE")
-        print(consultation_triage)
-
-        possible_conditions = api_response['report']['summary']['articles_v3']
-        print("POSSIBLE CONDITIONS")
-        print(possible_conditions)
-
-        metadata = api_response['report']['summary']['articles_v3'][0]['metadata']
-        triage_worries = api_response['report']['summary']['articles_v3'][0]['content']['triage']['triage_worries']
-        # Replace newline characters with <br> tags
-        triage_worries_html = triage_worries.replace('\n', '<br>')
-        influencing_factors = api_response['report']['summary']['influencing_factors']
-        user_profile = api_response['report']['summary']['user_profile']
-        duration = api_response['report']['summary']['duration']
-        extracted_symptoms =api_response['report']['summary']['extracted_symptoms']
-        additional_symptoms = api_response['report']['summary']['additional_symptoms']
-        negative_symptoms = api_response['report']['summary']['negative_symptoms']
-        unsure_symptoms = api_response['report']['summary']['unsure_symptoms']
-        user_profile = api_response['report']['summary']['user_profile']
+        if target_language_code == 'en':
+            consultation_triage = api_response['report']['summary']['consultation_triage']
+            print("CONSULTATION TRIAGE")
+            print(consultation_triage)
+            possible_conditions = api_response['report']['summary']['articles_v3']
+            print("POSSIBLE CONDITIONS")
+            print(possible_conditions)
+            metadata = api_response['report']['summary']['articles_v3'][0]['metadata']
+            triage_worries = api_response['report']['summary']['articles_v3'][0]['content']['triage']['triage_worries']
+            # Replace newline characters with <br> tags
+            triage_worries_html = triage_worries.replace('\n', '<br>')
+            influencing_factors = api_response['report']['summary']['influencing_factors']
+            duration = api_response['report']['summary']['duration']
+            extracted_symptoms =api_response['report']['summary']['extracted_symptoms']
+            additional_symptoms = api_response['report']['summary']['additional_symptoms']
+            negative_symptoms = api_response['report']['summary']['negative_symptoms']
+            unsure_symptoms = api_response['report']['summary']['unsure_symptoms']
+            user_profile = api_response['report']['summary']['user_profile']
+            # timestamp = datetime.now()
+        else:
+            # translated
+            consultation_triage_json_string = json.dumps(api_response['report']['summary']['consultation_triage'])
+            consultation_triage = json.loads(translate(target_language_code, consultation_triage_json_string))
+                       
+            possible_conditions_json_string = json.dumps(api_response['report']['summary']['articles_v3'])
+            possible_conditions = json.loads(translate(target_language_code, possible_conditions_json_string))
+                         
+            metadata_json_string = json.dumps(api_response['report']['summary']['articles_v3'][0]['metadata'])
+            metadata = json.loads(translate(target_language_code, metadata_json_string))
+                               
+            triage_worries_json_string = json.dumps(api_response['report']['summary']['articles_v3'][0]['content']['triage']['triage_worries'])
+            triage_worries = json.loads(translate(target_language_code, triage_worries_json_string))   
+            triage_worries_html = triage_worries.replace('\n', '<br>')
         
-        timestamp = datetime.now()
+            influencing_factors_json_string = json.dumps(api_response['report']['summary']['influencing_factors'])
+            influencing_factors = json.loads(translate(target_language_code, influencing_factors_json_string)) 
+
+            duration_json_string = json.dumps(api_response['report']['summary']['duration'])
+            duration = json.loads(translate(target_language_code, duration_json_string)) 
+
+            extracted_symptoms_json_string = json.dumps(api_response['report']['summary']['extracted_symptoms'])
+            extracted_symptoms = json.loads(translate(target_language_code, extracted_symptoms_json_string)) 
+
+            additional_symptoms_json_string = json.dumps(api_response['report']['summary']['additional_symptoms'])
+            additional_symptoms = json.loads(translate(target_language_code, additional_symptoms_json_string)) 
+            
+            negative_symptoms_json_string = json.dumps(api_response['report']['summary']['negative_symptoms'])
+            negative_symptoms = json.loads(translate(target_language_code, negative_symptoms_json_string)) 
+            
+            unsure_symptoms_json_string = json.dumps(api_response['report']['summary']['unsure_symptoms'])
+            unsure_symptoms = json.loads(translate(target_language_code, unsure_symptoms_json_string)) 
+
+            user_profile_json_string = json.dumps(api_response['report']['summary']['user_profile'])
+            user_profile = json.loads(translate(target_language_code, user_profile_json_string)) 
+                        
+        timestamp =  datetime.now()
 
         health_background_conditions_list = []
         condition_ids = list(HealthBackground.objects.values_list('condition_id', flat=True))
@@ -1477,11 +1520,11 @@ def send_final(request):
             print("factor")
             print(factor)
             if factor['cui'] in condition_ids:
-                health_background_conditions["name"] = factor['long_name']          
-                health_background_conditions["patient_has_condition"] = "Yes"
+                health_background_conditions["name"] = translate(target_language_code,factor['long_name'])    
+                health_background_conditions["patient_has_condition"] = translate(target_language_code,"Yes")
             else:
-                health_background_conditions["name"] = factor['long_name']
-                health_background_conditions["patient_has_condition"] = "No"
+                health_background_conditions["name"] = translate(target_language_code,factor['long_name'])
+                health_background_conditions["patient_has_condition"] = translate(target_language_code,"No")
             health_background_conditions_list.append(health_background_conditions)
         print(health_background_conditions_list)
 
