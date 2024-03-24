@@ -19,14 +19,6 @@ class TextInputForm(forms.ModelForm):
         model = TextInput
         fields = ['symptom_name']
 
-# class ChoiceForm(forms.ModelForm):
-#     class Meta:
-#         model = Choice
-#         fields = ['Options:']  # Only include the is_selected field in the form
-
 class SingleChoiceForm(forms.Form):
-    # pass
-    choices = forms.ModelChoiceField(queryset=SingleChoice.objects.all(), widget=forms.RadioSelect())
+    choices = forms.ModelChoiceField(queryset=SingleChoice.objects.all(), widget=forms.RadioSelect(attrs={'style': 'list-style:none;'}), required=True)
 
-# class ConditionForm(forms.Form):
-#     conditions = forms.ModelMultipleChoiceField(queryset=Condition.objects.all(), widget=forms.CheckboxSelectMultiple)

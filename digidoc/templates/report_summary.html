@@ -22,41 +22,16 @@
                     <li class="nav-item menu-item">
                         <a href="{% url 'new_chat' %}" class="nav-link active" aria-current="page" href="#">New Chat</a>
                     </li> 
-                    <li class="nav-item dropdown menu-item">
-                        <a class="nav-link active dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            Languages
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li>
-                                <a class="dropdown-item dropdown-content" href="#">
-                                    --
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item dropdown-content" href="#">
-                                    --
-                                </a>
-                            </li>
-                            <li>
-                                <hr class="dropdown-divider">
-                            </li>
-                            <li>
-                                <a class="dropdown-item dropdown-content" dropdown-content href="#">
-                                    --
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
-                    <li class="nav-item menu-item">
-                        <a class="nav-link active" aria-current="page" href='#'></a>
-                    </li>
                 </ul>
             </div>
         </div>
     </nav>
+<div>
+    <div class="ms-5">
+        <h1>Your Report</h1>
+        <h6>{{timestamp}}</h6>
+    </div>
 
-    <h1>Your Report</h1>
-    <h6>{{timestamp}}</h6>
     <div>
         <div class="col d-flex justify-content-center">
             {% if consultation_triage.level == 'urgent_48h_condition'%}
@@ -91,8 +66,11 @@
         </div>
     </div>
     <div>
-        <h2>Summary</h2>
-        <h3>Possible Causes</h3>
+        <div class="ms-5">
+            <h2>Summary</h2>
+            <h3>Possible Causes</h3>
+        </div>
+
         <div class="col d-flex justify-content-center">
             {% for condition in possible_conditions %}
                 <button type="button" class="btn" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
@@ -172,8 +150,6 @@
     </div>
 
         
-
-    </div>
     <div>
         <div class="col d-flex justify-content-center">
             <div class="card">
@@ -229,6 +205,8 @@
             </div>
         </div>
     </div>
+</div>
+
 
 
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
