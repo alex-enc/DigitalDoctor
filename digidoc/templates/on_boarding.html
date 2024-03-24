@@ -6,6 +6,7 @@
     <title>DigiDoc</title>
     <link rel="stylesheet" href="{% static 'css/home.css' %}">
     <link rel="stylesheet" href="{% static 'css/chat.css' %}">
+    <link rel="stylesheet" href="{% static 'css/on_boarding.css' %}">
 </head>
 <body>
     <nav class="navbar navbar-dark navbar-expand-lg " style="background-color: #6495ED;">
@@ -48,7 +49,6 @@
                         <div class="row">
                             <div class="col-12 my-auto">
                                 <div class="container">
-
                                     <form action="{% url 'on_boarding' %}" method="post">
                                         {% csrf_token %}
                                         {% for field in form %}
@@ -66,29 +66,21 @@
                                                     {% render_field field class="form-control" %}
                                             
                                                 {% endif %}
-                                                <div class="valid-feedback">
-                                                    Looks good!
-                                                </div>
-                                                <div class="invalid-feedback">
-                                                    {% for error in field.errors %}
-                                                        <span class="error-message">{{ error }}</span>
-                                                    {% endfor %}
-                                                </div>
+             
                                             </div>
                                         {% endfor %}
+                                       
+                                        {{gender_form}}
+                                      
+                                        
                                         <div class="mb-3">
                                             <input href="#" type="submit" value="Next" class="btn btn-primary" style="width: 250px"> 
                                         </div>
                                     </form>
-                                        
-                                    
-                                   
                                 </div>
-                                
                             </div>
                         </div>
-                    </div>
-            
+                    </div>    
                 {% endif %}
             </div>
         </div>

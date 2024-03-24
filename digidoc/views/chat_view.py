@@ -432,7 +432,14 @@ def new_chat(request):
         first_two_messages = translated_messages[:2]
         print(first_two_messages)
         form = OnBoardingForm()
-        return render(request, template_name, {'first_two_messages': first_two_messages, 'form': form, 'scenario': scenario})
+        female_option = SingleChoice(choice_id='female', label='Female', conversation_id=conversation_id)
+        female_option.full_clean()
+        female_option.save()
+        male_option = SingleChoice(choice_id='male', label='Male', conversation_id=conversation_id)
+        male_option.full_clean()
+        male_option.save()
+        gender_form = SingleChoiceForm()
+        return render(request, template_name, {'first_two_messages': first_two_messages, 'form': form, 'gender_form': gender_form, 'scenario': scenario})
 
 def main_chat(request):
     # response_data = Chat()
@@ -502,7 +509,7 @@ def send_on_boarding(request):
         print("POST -- on_boarding")        
 
         form = OnBoardingForm(request.POST)
-        
+        gender_form = SingleChoiceForm(request.POST)
         if form.is_valid():
             name = request.POST.get('name')
             birth_year = request.POST.get('birth_year')
@@ -510,7 +517,9 @@ def send_on_boarding(request):
                 initial_symptoms = request.POST.get('initial_symptoms')
             else:
                 initial_symptoms = translate_to_english(target_language_code, request.POST.get('initial_symptoms'))
-            gender = request.POST.get('gender')
+            # gender = request.POST.get('gender')
+            if gender_form.is_valid():
+                gender = gender_form.cleaned_data['choices']
             timestamp = request.POST.get('timestamp')
             initial_symptoms_splitted = initial_symptoms.split(", ")
             print("initial symptoms")
