@@ -20,7 +20,7 @@ class OnBoarding(models.Model):
     gender = models.CharField(max_length=6, choices=GENDER_CHOICES)
     birth_year = models.IntegerField(choices=get_birth_year_choices(), verbose_name=_("Birth Year"))
     initial_symptoms = models.CharField(max_length=1000)
-    timestamp = models.DateTimeField(auto_now_add=True)
+
 
 class MultipleChoice(models.Model):
     name = models.CharField(max_length=100)
@@ -40,6 +40,7 @@ class SingleChoice(models.Model):
 class APIResponse(models.Model):
     phase = models.CharField(max_length=100)
     question_type = models.CharField(max_length=100)
+    choice_type = models.CharField(max_length=100)
 
 class TextInput(models.Model):
     symptom_name = models.CharField(max_length=1000)

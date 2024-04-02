@@ -55,10 +55,24 @@
                             <p class="card-text">{{ consultation_triage.triage_advice|safe }}</p>
                     </div>
                 </div>
+            {% elif consultation_triage.level == 'emergency_ambulance_symptom'%}
+                <div class="card bg-danger">
+                    <div class="card-body" style="width: 100rem;"> 
+                            <h5 class="card-title">Urgent</h5>
+                            <p class="card-text">{{ consultation_triage.triage_advice|safe }}</p>
+                    </div>
+                </div>
+            {% elif consultation_triage.level == 'emergency_ae_symptom'%}
+                <div class="card bg-danger">
+                    <div class="card-body" style="width: 100rem;"> 
+                            <h5 class="card-title">Urgent</h5>
+                            <p class="card-text">{{ consultation_triage.triage_advice|safe }}</p>
+                    </div>
+                </div>
             {% else %}
-            <div class="card bg-info">
+            <div class="card bg-warning">
                 <div class="card-body" style="width: 100rem;"> 
-                        <h5 class="card-title">Other</h5>
+                        <h5 class="card-title">{{consultation_triage.level}}</h5>
                         <p class="card-text">{{ consultation_triage.triage_advice|safe }}</p>
                 </div>
             </div>
