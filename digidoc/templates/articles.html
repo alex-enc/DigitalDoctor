@@ -6,6 +6,7 @@
     <title>DigiDoc</title>
     <link rel="stylesheet" href="{% static 'css/home.css' %}">
     <link rel="stylesheet" href="{% static 'css/chat.css' %}">
+
 </head>
 <body>
     <nav class="navbar sticky-top navbar-dark navbar-expand-lg " style="background-color: #6495ED;">
@@ -35,9 +36,10 @@
                         <td>
                             <div class="card">
                                 <div class="card-body" >
-                                    <h3 class="card-title">{{ article.name }}</h2>
-                                    <h5 class="card-text">{{ article.snippet }}</p>
-                                    <img src="{{ article.image }}" alt="Article Image">
+                                    <h3 class="card-title">{{ article.name }}</h3>
+                                    <h6 class="card-text">{{ article.snippet }}</h6>
+                                    <img src="{{ article.image }}" alt="Article Image" style="max-width: 50rem; height:auto;">
+                                    <br>
                                     <p>Category: {{ article.category_name }}</p>
                                     <p>Reading Time: {{ article.reading_time_minutes }} minutes</p>
                                     <p><a href="{{ article.urls.web }}">Read More</a></p>
