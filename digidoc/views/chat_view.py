@@ -2141,7 +2141,7 @@ def send_answer(request):
             # Accessing the articles
             articles = api_response['report']['articles']
             request.session['articles'] = json.dumps(articles)
-            return render(request, 'end_of_chat.html', {'messages': translated_messages, 'form': form, 'step_back_possible':step_back_possible})
+            return render(request, 'chat.html', {'messages': translated_messages,'step_back_possible':step_back_possible, 'see_articles': True})
         elif (phase=='clarify'):
             MultipleChoice.objects.all().delete()
             save_mcq_label(target_language_code, api_response)

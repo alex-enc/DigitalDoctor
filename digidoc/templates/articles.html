@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="{% static 'css/chat.css' %}">
 </head>
 <body>
-    <nav class="navbar navbar-dark navbar-expand-lg " style="background-color: #6495ED;">
+    <nav class="navbar sticky-top navbar-dark navbar-expand-lg " style="background-color: #6495ED;">
         <div class="container-fluid">
             <a class="navbar-brand" href="{% url 'home' %}"><strong>DigiDoc</strong></a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
@@ -27,18 +27,32 @@
     </nav>
 
     <h1>Articles</h1>
-    <div>
-        {% for article in articles %}
-            <div>
-                <h2>{{ article.name }}</h2>
-                <p>{{ article.snippet }}</p>
-                <img src="{{ article.image }}" alt="Article Image">
-                <p>Category: {{ article.category_name }}</p>
-                <p>Reading Time: {{ article.reading_time_minutes }} minutes</p>
-                <p><a href="{{ article.urls.web }}">Read more on web</a></p>
-                <p><a href="{{ article.urls.mobile }}">Read more on mobile</a></p>
-            </div>
-        {% endfor %}
+    <div class="d-flex justify-content-center">
+        <table class="table">
+            <tbody>
+                {% for article in articles %}
+                    <tr>
+                        <td>
+                            <div class="card">
+                                <div class="card-body" >
+                                    <h3 class="card-title">{{ article.name }}</h2>
+                                    <h5 class="card-text">{{ article.snippet }}</p>
+                                    <img src="{{ article.image }}" alt="Article Image">
+                                    <p>Category: {{ article.category_name }}</p>
+                                    <p>Reading Time: {{ article.reading_time_minutes }} minutes</p>
+                                    <p><a href="{{ article.urls.web }}">Read More</a></p>
+                                </div>
+                            </div>
+                        </td>
+
+        
+                    </tr>
+                    <br>
+                {% endfor %}
+            </tbody>
+
+        </table>
+
     </div>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.min.js" integrity="sha384-BBtl+eGJRgqQAUMxJ7pMwbEyER4l1g+O15P+16Ep7Q9Q+zqX6gSbd85u4mG4QzX+" crossorigin="anonymous"></script>
