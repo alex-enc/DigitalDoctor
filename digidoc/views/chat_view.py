@@ -187,10 +187,10 @@ def save_mcq_label(target_language_code, api_response):
                 symptom_label = symptom_data['label']
             else:
                 symptom_label = translate(target_language_code, symptom_data['label'])
-            symptom_conversation_id = conversation_id
+            
     
             # Create MultipleChoice object and save selected choice(s) to the database
-            symptom = MultipleChoice(choice_id=symptom_id, name=symptom_label, conversation_id=symptom_conversation_id)
+            symptom = MultipleChoice(choice_id=symptom_id, name=symptom_label, conversation_id=conversation_id)
             symptom.full_clean()
             symptom.save()
 
@@ -211,13 +211,20 @@ def save_mcq_long_name(target_language_code, api_response):
                 condition_long_name = health_condition_data['long_name']
             else:
                 condition_long_name = translate(target_language_code, health_condition_data['long_name'])
-            condition_conversation_id = conversation_id
+            
     
             # Create MultipleChoice object and save selected choice(s) to the database
-            condition = MultipleChoice(choice_id=condition_id, name=condition_long_name, conversation_id=condition_conversation_id)
+            condition = MultipleChoice(choice_id=condition_id, name=condition_long_name, conversation_id=conversation_id)
             condition.full_clean()
             condition.save()
-    
+    phase = (APIResponse.objects.get()).phase
+    min_selections = api_response.get('conversation', {}).get('constraints' , {}).get('min_selections', None)
+
+    if phase == 'health_background'or min_selections == 0:
+        none_option = MultipleChoice(choice_id=[], name='None of these', conversation_id=conversation_id)
+        none_option.full_clean()
+        none_option.save()
+
 def save_mcq_text(target_language_code, api_response):
     MultipleChoice.objects.all().delete()
     list_of_choices = []
@@ -240,12 +247,18 @@ def save_mcq_text(target_language_code, api_response):
             print("CHOICE TEXT")
             print(choice_label)
             # selected = True
-            choice_conversation_id = conversation_id
+
     
             # Create  object and save to database
-            chosen_option = MultipleChoice(choice_id=choice_id, name=choice_label, conversation_id=choice_conversation_id)
+            chosen_option = MultipleChoice(choice_id=choice_id, name=choice_label, conversation_id=conversation_id)
             chosen_option.full_clean()
             chosen_option.save()
+    # min_selections = api_response.get('conversation', {}).get('constraints' , {}).get('min_selections', None)
+
+    # # if min_selections == 0:
+    # none_option = MultipleChoice(choice_id=[], name='None of these', conversation_id=conversation_id)
+    # none_option.full_clean()
+    # none_option.save()
 
 def save_choices_label(target_language_code, api_response):
         SingleChoice.objects.all().delete()
@@ -265,12 +278,12 @@ def save_choices_label(target_language_code, api_response):
                 else:
                     choice_label = translate(target_language_code, choice['label'])
                 # selected = True
-                choice_conversation_id = conversation_id
         
                 # Create Symptom object and save to database
-                chosen_option = SingleChoice(choice_id=choice_id, label=choice_label, conversation_id=choice_conversation_id)
+                chosen_option = SingleChoice(choice_id=choice_id, label=choice_label, conversation_id=conversation_id)
                 chosen_option.full_clean()
                 chosen_option.save()
+    
 
 def save_choices_text(target_language_code, api_response):
         SingleChoice.objects.all().delete()
@@ -290,10 +303,9 @@ def save_choices_text(target_language_code, api_response):
                 else:
                     choice_label = translate(target_language_code, choice['text'])
                 # selected = True
-                choice_conversation_id = conversation_id
         
                 # Create Symptom object and save to database
-                chosen_option = SingleChoice(choice_id=choice_id, label=choice_label, conversation_id=choice_conversation_id)
+                chosen_option = SingleChoice(choice_id=choice_id, label=choice_label, conversation_id=conversation_id)
                 chosen_option.full_clean()
                 chosen_option.save()
 
@@ -514,6 +526,8 @@ def main_chat(request):
         elif previous_phase == 'report':
             print("previous_phase -- report") 
             return send_report(request)
+        elif previous_phase == 'clarify_consultation':
+            return send_answer(request)
         else:
             # If none of the conditions are met, return a default response
             return HttpResponseNotFound('Page not found')
@@ -1406,29 +1420,16 @@ def send_answer(request):
 
             if previous_phase == 'symptom_check':
                 response_data.set_symptom_confirmation_in_formatted_input(selected_choices_ids, conversation_id)
-                # response = requests.post(response_data.url, json=response_data.formatted_input, headers=response_data.headers)
-                # print(response_data.formatted_input) #prints users answer response
-                # print(response.json())
-                    # pass
             elif previous_phase == 'clarify':
                 response_data.set_symptom_confirmation_in_formatted_input(selected_choices_ids, conversation_id)
-                # response = requests.post(response_data.url, json=response_data.formatted_input, headers=response_data.headers)
-                # print(response_data.formatted_input) #prints users answer response
-                # print(response.json())
             elif previous_phase == 'health_background':
                 health_background = HealthBackground(condition_id = choice.choice_id)
                 health_background.full_clean()
                 health_background.save()
                 response_data.set_condition_confirmation_in_formatted_input(selected_choices_ids, conversation_id)
-                # response = requests.post(response_data.url, json=response_data.formatted_input, headers=response_data.headers)
-                # print(response_data.formatted_input) #prints users answer response
-                # print(response.json())
             elif previous_phase == 'questions':
                 if previous_question_type == 'symptoms':
                     response_data.set_condition_confirmation_in_formatted_input(selected_choices_ids, conversation_id)
-                    # response = requests.post(response_data.url, json=response_data.formatted_input, headers=response_data.headers)
-                    # print(response_data.formatted_input) #prints users answer response
-                    # print(response.json())
                 else:
                     print('no question type')
             else:
@@ -1638,7 +1639,14 @@ def send_answer(request):
             print(symptoms_count)
             choices = SingleChoice.objects.all()
             return render(request, 'chat2.html', {'messages': translated_messages,'form1': form1, 'form2': form2, 'symptoms_count': symptoms_count, 'choices':choices})
-       
+        elif(phase == 'clarify_consultation'):
+            save_choices_label(target_language_code, api_response)
+            choice_id = (SingleChoice.objects.get()).choice_id
+            if choice_id == 'restart_assessment':
+                restart = True
+            else:
+                restart = False
+            return render(request, 'chat.html', {'messages': translated_messages, 'restart': restart})
         else:
             pass
     else:

@@ -48,6 +48,10 @@
                     <div class="mb-3" style="text-align: center; align-items: center; justify-content: center;">
                         <a href="{% url 'articles' %}" class="btn btn-outline-primary start">See Articles</a>
                     </div>
+                {% elif restart %}
+                    <div class="mb-3" style="text-align: center; align-items: center; justify-content: center;">
+                        <a href="{% url 'home' %}" class="btn btn-outline-primary start">Restart the Assessment</a>
+                    </div>
                 {% else %}
                     <form action="{% url 'main_chat'%}" method="post">
                         {% csrf_token %}
