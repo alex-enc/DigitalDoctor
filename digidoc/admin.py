@@ -1,6 +1,6 @@
 from django.contrib import admin
 from digidoc.models.user_models import User 
-from digidoc.models.message_models import OnBoarding
+from digidoc.models.symptom_checker_models import OnBoarding
 
 # Register your models here.
 @admin.register(User)
@@ -14,7 +14,7 @@ class UserAdmin(admin.ModelAdmin):
 
 @admin.register(OnBoarding)
 class UserAdmin(admin.ModelAdmin):
-    """Configuration of the admin interface for messages. """
+    """Configuration of the admin interface for OnBoarding. """
     list_display = ['name',
                     'birth_year',
                     'initial_symptoms',

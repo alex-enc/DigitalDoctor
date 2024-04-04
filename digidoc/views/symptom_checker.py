@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 import requests
 import json
-from digidoc.models.message_models import OnBoarding, MultipleChoice, SingleChoice, APIResponse, TextInput, HealthBackground, ConversationId, Language
+from digidoc.models.symptom_checker_models import OnBoarding, MultipleChoice, SingleChoice, APIResponse, TextInput, HealthBackground, ConversationId, Language
 from digidoc.forms.chat_forms import OnBoardingForm, MultipleChoiceForm, SingleChoiceForm, TextInputForm
 from django.http import HttpResponse, QueryDict
 from django.contrib.sessions.models import Session
