@@ -3,7 +3,7 @@ from django.contrib import messages
 import requests
 import json
 from digidoc.models.symptom_checker_models import OnBoarding, MultipleChoice, SingleChoice, APIResponse, TextInput, HealthBackground, ConversationId, Language
-from digidoc.forms.chat_forms import OnBoardingForm, MultipleChoiceForm, SingleChoiceForm, TextInputForm
+from digidoc.forms.symptom_checker_forms import OnBoardingForm, MultipleChoiceForm, SingleChoiceForm, TextInputForm
 from django.http import HttpResponse, QueryDict
 from django.contrib.sessions.models import Session
 from django.http import HttpResponseNotFound
