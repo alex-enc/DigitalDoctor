@@ -266,23 +266,38 @@ def save_choices_label(target_language_code, api_response):
         list_of_choices.append(api_response.get('question', {}).get('choices' , []))
 
         conversation_id = api_response.get('conversation', {}).get('id' , None)
-
+        previous_phase = (APIResponse.objects.get()).phase
+        print('previous_phase')
+        print(previous_phase)
         print("CHOICES")
-        print(list_of_choices)
-        for sublist in list_of_choices:
-            for choice in sublist:
-                # Extracts symptom id and label
-                choice_id = choice['id']
-                if target_language_code == 'en':
-                    choice_label = choice['label']
-                else:
-                    choice_label = translate(target_language_code, choice['label'])
-                # selected = True
-        
-                # Create Symptom object and save to database
+        print(list_of_choices[0])
+        if previous_phase == 'symptom_check':
+                for choice in list_of_choices[0]:
+                    if choice['id'] == 'continue_assessment':
+                        choice_id = choice['id']
+                        if target_language_code == 'en':
+                            choice_label = choice['label']
+                        else:
+                            choice_label = translate(target_language_code, choice['label'])
+
                 chosen_option = SingleChoice(choice_id=choice_id, label=choice_label, conversation_id=conversation_id)
                 chosen_option.full_clean()
                 chosen_option.save()
+        else:
+            for sublist in list_of_choices:
+                for choice in sublist:
+                    # Extracts symptom id and label
+                    choice_id = choice['id']
+                    if target_language_code == 'en':
+                        choice_label = choice['label']
+                    else:
+                        choice_label = translate(target_language_code, choice['label'])
+                    # selected = True
+            
+                    # Create Symptom object and save to database
+                    chosen_option = SingleChoice(choice_id=choice_id, label=choice_label, conversation_id=conversation_id)
+                    chosen_option.full_clean()
+                    chosen_option.save()
     
 
 def save_choices_text(target_language_code, api_response):
@@ -492,8 +507,7 @@ def main_chat(request):
             # return send_autocomplete_start(request)
             return send_answer(request)
         elif previous_phase == 'autocomplete_add':
-            print("previous_phase -- autocomplete_add") 
-            return autocomplete(request)
+            pass
         elif previous_phase == 'clarify': 
             print("previous_phase -- clarify") 
             # return send_symptom_check(request) 
@@ -509,14 +523,6 @@ def main_chat(request):
         elif previous_phase == 'questions': 
             print("previous_phase -- questions") 
             return send_answer(request)
-            # if previous_question_type == 'symptoms':
-            #     return send_symptoms_question(request)
-            # elif previous_question_type == 'symptom':
-            #     return send_symptom_question(request)
-            # elif previous_question_type == 'factor':
-            #     return send_symptom_question(request)
-            # else:
-            #     print("Previous question type does not exist")
         elif previous_phase == 'pre_diagnosis':
             print("previous_phase -- pre_diagnosis") 
             return send_pre_diagnosis(request)
@@ -790,163 +796,6 @@ def send_autocomplete_start(request):
     else:
         form = MultipleChoiceForm()
     return render(request, 'chat.html', {'form': form, 'step_back_possible':step_back_possible})
-
-
-def add_symptom(request):
-    print("POST -- add_symptom")
-    symptoms_count = TextInput.objects.count()
-    print("COUNT")
-    print(symptoms_count)
-    symptoms = TextInput.objects.all()
-    is_database_empty = TextInput.objects.count() > 0
-    form2 = SingleChoiceForm()
-    choices = SingleChoice.objects.all()
-    if symptoms_count >= 3:
-        choice_id = 'empty_id_autocomplete'
-        form2 = SingleChoiceForm(initial=choice_id)
-        return render(request, 'chat2.html', {'form2': form2, 'symptoms':symptoms,'symptoms_count': symptoms_count, 'choices':choices})
-    if request.method == 'POST':
-        form = TextInputForm(request.POST)
-        if form.is_valid():
-            form.save()
-            form1 = TextInputForm()
-            symptoms_count = TextInput.objects.count()
-            print("COUNT")
-            print(symptoms_count)
-            if symptoms_count == 0:
-                choice_id = 'cant_find_symptoms'
-                form2 = SingleChoiceForm(initial={'choice_id': choice_id})
-            else:
-                choice_id = 'empty_id_autocomplete'
-                form2 = SingleChoiceForm(initial={'choice_id': choice_id})
-            return render(request, 'chat2.html', {'form1': form1, 'form2':form2, 'symptoms':symptoms, 'symptoms_count': symptoms_count, 'choices': choices})
-    else:
-        form1 = TextInputForm()
-        form2 = form2 = SingleChoiceForm()
-    return render(request, 'chat2.html', {'form1': form1, 'form2':form2, 'symptoms':symptom, 'symptoms_count': symptoms_count, 'choices':choices})
-
-def autocomplete(request):
-    response_data = Chat()
-    if request.method == 'GET': 
-        print("GET -- autocomplete")        
-        APIResponse.objects.all().delete()
-        target_language_code = get_language_used()
-        response = []
-        added_symptoms = TextInput.objects.values_list('symptom_name', flat=True)
-        conversation_id = ConversationId.objects.first()
-        # Convert QuerySet to a Python list
-        added_symptoms_list = list(added_symptoms)
-        for symptom in added_symptoms_list:
-            api_response = response_data.autocomplete_request(symptom)
-            print(api_response)
-            response.append(api_response)
-        MultipleChoice.objects.all().delete()
-        print("response")
-        print(response)
-        for item in response:
-            autocomplete_list = item.get('autocomplete', []) 
-            for suggestion in autocomplete_list:
-                user_facing_name = suggestion.get('user_facing_name')
-                choice_id = suggestion.get('id')
-                print("User Facing Name:", user_facing_name)
-                print("ID:", choice_id)
-                # Create  object and save to database
-                chosen_option = MultipleChoice(choice_id=choice_id, name=user_facing_name, conversation_id=conversation_id)
-                chosen_option.full_clean()
-                chosen_option.save()
-            form = MultipleChoiceForm() 
-        return render(request, 'chat3.html', {'form':form})
-    return render(request, 'chat3.html', {'form':form})
-
-def autocomplete_post(request):
-    response_data = Chat()
-    if request.method == 'POST': 
-        print("GET -- autocomplete_post")        
-        APIResponse.objects.all().delete()
-        target_language_code = get_language_used()
-        form = MultipleChoiceForm(request.POST)
-        selected_symptom_ids = []
-        selected_symptom_name = []
-        if form.is_valid():
-            selected_symptoms = form.cleaned_data['multiple_choices']
-            # Handle the selected condition data
-            for symptom in selected_symptoms:
-          
-                print(f"Selected symptom: {symptom}")
-    
-                selected_symptom_name.append(symptom.name)
-                # Retrieves the symptom ID from the symptom object and append it to the list
-                selected_symptom_ids.append(symptom.choice_id)
-                
-            print(str(selected_symptom_ids))
-
-            conversation_id = MultipleChoice.objects.get(choice_id=selected_symptom_ids[0]).conversation_id
-            print("convo id")
-            print(conversation_id)
-            print("selected_symptom_name")
-            print(str(selected_symptom_name))
-
-            MultipleChoice.objects.all().delete()
-
-            response_data.set_autocomplete_post(selected_symptom_ids, conversation_id)
-            print(response_data.formatted_input)
-            response = requests.post(response_data.url, json=response_data.formatted_input, headers=response_data.headers)
-            print(response_data.formatted_input)
-            print(response.json())
-            api_response = response.json()
-
-            phase = get_phase_from_api_response(api_response)
-            question_type = get_question_type_from_api_response(api_response)
-            save_APIResponse(phase, question_type)
-
-            template_name = get_template_for_phase(phase)
-
-        else:
-            print("NO")
-        step_back_possible = api_response.get('conversation', {}).get('step_back_possible' , [])
-        print(step_back_possible)
-        # saves api response as messages
-        messages = []
-        messages.append(api_response.get('question', {}).get('messages' , []))
-
-
-        print("MESSAGES")
-        print(messages)
-
-        # check the type of message
-        message_type = api_response.get('question', {}).get('type' , [])
-        print("MESSAGE TYPE")
-        print(message_type)
-        if message_type == 'generic':
-            text_content = [msg['value'] for sublist in messages for msg in sublist if msg.get('type') == 'generic']
-            print("text content")
-            print(text_content)
-        elif message_type == 'health_background':
-            text_content = [msg['text'] for sublist in messages for msg in sublist if msg.get('type') == 'text' or msg.get('type') == 'small_text']
-            print("text content")
-            print(text_content)
-        elif message_type == 'symptoms':
-            text_content = [msg['text'] for sublist in messages for msg in sublist if msg.get('type') == 'text']
-            print("text content")
-            print(text_content)
-        else :
-            text_content = "No content"
-            print("text content")
-            print(text_content)
-        # text_content = [msg['value'] for sublist in messages for msg in sublist if msg.get('type') == 'generic']
-
-        translated_messages = []
-    
-        for message in text_content:
-            print(message)
-            print(translate(target_language_code, message))
-            translated_messages.append(translate(target_language_code, message))
-
-            form = MultipleChoiceForm()
-        return render(request, 'chat.html', {'messages': translated_messages, 'form': form, 'step_back_possible':step_back_possible})
-    else:
-        form = MultipleChoiceForm()
-    return render(request, 'chat.html', {'form': form})
 
 def send_health_background(request):
     response_data = Chat()
@@ -1600,12 +1449,16 @@ def send_answer(request):
             print(text_content)
 
         translated_messages = []
-    
-        for message in text_content:
-            print(message)
+        if phase == 'autocomplete_start':
+            message = text_content[0]
             print(translate(target_language_code, message))
             translated_messages.append(translate(target_language_code, message))
-    
+        else:
+            for message in text_content:
+                print(message)
+                print(translate(target_language_code, message))
+                translated_messages.append(translate(target_language_code, message))
+        
         print(translated_messages)
 
         if (phase=='info_result'):
@@ -1629,16 +1482,16 @@ def send_answer(request):
             save_choices_label(target_language_code,api_response)
             form = SingleChoiceForm()
             return render(request, 'chat.html', {'messages': translated_messages,'form': form, 'step_back_possible':step_back_possible})  
-        elif (phase=='autocomplete_add'):
-            SingleChoice.objects.all().delete()
-            save_choices_text(target_language_code, api_response)
-            form1 = TextInputForm()
-            form2 = SingleChoiceForm()
-            symptoms_count = TextInput.objects.count()
-            print("COUNT")
-            print(symptoms_count)
-            choices = SingleChoice.objects.all()
-            return render(request, 'chat2.html', {'messages': translated_messages,'form1': form1, 'form2': form2, 'symptoms_count': symptoms_count, 'choices':choices})
+        # elif (phase=='autocomplete_add'):
+        #     SingleChoice.objects.all().delete()
+        #     save_choices_text(target_language_code, api_response)
+        #     form1 = TextInputForm()
+        #     form2 = SingleChoiceForm()
+        #     symptoms_count = TextInput.objects.count()
+        #     print("COUNT")
+        #     print(symptoms_count)
+        #     choices = SingleChoice.objects.all()
+        #     return render(request, 'chat2.html', {'messages': translated_messages,'form1': form1, 'form2': form2, 'symptoms_count': symptoms_count, 'choices':choices})
         elif(phase == 'clarify_consultation'):
             save_choices_label(target_language_code, api_response)
             choice_id = (SingleChoice.objects.get()).choice_id
@@ -1652,4 +1505,3 @@ def send_answer(request):
     else:
         form = MultipleChoiceForm()
     return render(request, 'chat.html', {'messages': translated_messages, 'form': form, 'step_back_possible':step_back_possible})
-
