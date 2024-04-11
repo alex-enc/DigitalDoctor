@@ -8,8 +8,8 @@ from django.http import HttpResponse, QueryDict
 from django.contrib.sessions.models import Session
 from django.http import HttpResponseNotFound
 from datetime import datetime
-# from django.utils.translation import gettext as _
-from easygoogletranslate import EasyGoogleTranslate
+
+from easygoogletranslate import EasyGoogleTranslate  #taken from https://github.com/ahmeterenodaci/easygoogletranslate
 
 
 from digidoc.healthily_API.API_authentication import APIAuthenticate
@@ -664,138 +664,138 @@ def send_on_boarding(request):
         return render(request, template_name, {'messages': translated_messages, 'form': form, 'step_back_possible':step_back_possible})
 
 
-def send_autocomplete_start(request):
-    response_data = Chat()
-    if request.method == 'POST': 
-        print("POST -- submit_choice")        
-        APIResponse.objects.all().delete()
-        target_language_code = get_language_used()
-        print(target_language_code)
-        form = SingleChoiceForm(request.POST)
-        selected_choice_id = []
-        selected_choice_label = []
-        if form.is_valid():
-            choice = form.cleaned_data['choices']
-            # Handle the selected symptoms data
+# def send_autocomplete_start(request):
+#     response_data = Chat()
+#     if request.method == 'POST': 
+#         print("POST -- submit_choice")        
+#         APIResponse.objects.all().delete()
+#         target_language_code = get_language_used()
+#         print(target_language_code)
+#         form = SingleChoiceForm(request.POST)
+#         selected_choice_id = []
+#         selected_choice_label = []
+#         if form.is_valid():
+#             choice = form.cleaned_data['choices']
+#             # Handle the selected symptoms data
        
-            # Do something with the selected symptom ID
-            print(f"Selected choice: {choice}")
+#             # Do something with the selected symptom ID
+#             print(f"Selected choice: {choice}")
 
-            selected_choice_label.append(choice.label)
-            # Retrieves the choice ID from the choice object and append it to the list
-            selected_choice_id.append(choice.choice_id)
-            print(str(selected_choice_id))
-            conversation_id = SingleChoice.objects.get(choice_id=selected_choice_id[0]).conversation_id
-            print("convo id")
-            print(conversation_id)
-            print("selected_choice_label")
-            print(str(selected_choice_label))
+#             selected_choice_label.append(choice.label)
+#             # Retrieves the choice ID from the choice object and append it to the list
+#             selected_choice_id.append(choice.choice_id)
+#             print(str(selected_choice_id))
+#             conversation_id = SingleChoice.objects.get(choice_id=selected_choice_id[0]).conversation_id
+#             print("convo id")
+#             print(conversation_id)
+#             print("selected_choice_label")
+#             print(str(selected_choice_label))
 
-            response_data.set_symptom_confirmation_in_formatted_input(selected_choice_id, conversation_id)
+#             response_data.set_symptom_confirmation_in_formatted_input(selected_choice_id, conversation_id)
 
-            response = requests.post(response_data.url, json=response_data.formatted_input, headers=response_data.headers)
-            print(response_data.formatted_input)
-            print(response.json())
-            api_response = response.json()
+#             response = requests.post(response_data.url, json=response_data.formatted_input, headers=response_data.headers)
+#             print(response_data.formatted_input)
+#             print(response.json())
+#             api_response = response.json()
 
-            phase = get_phase_from_api_response(api_response)
-            question_type = get_question_type_from_api_response(api_response)
-            multiple = api_response.get('question', {}).get('multiple' , [])
-            if multiple:
-                choice_type = 'multiple'
-            else:
-                choice_type = 'single'
-            save_APIResponse(phase, question_type, choice_type)
+#             phase = get_phase_from_api_response(api_response)
+#             question_type = get_question_type_from_api_response(api_response)
+#             multiple = api_response.get('question', {}).get('multiple' , [])
+#             if multiple:
+#                 choice_type = 'multiple'
+#             else:
+#                 choice_type = 'single'
+#             save_APIResponse(phase, question_type, choice_type)
 
-            template_name = get_template_for_phase(phase)
+#             template_name = get_template_for_phase(phase)
           
-        else:
-            print("NO")
-        step_back_possible = api_response.get('conversation', {}).get('step_back_possible' , [])
-        # saves api response as messages
-        messages = []
-        messages.append(api_response.get('question', {}).get('messages' , []))
+#         else:
+#             print("NO")
+#         step_back_possible = api_response.get('conversation', {}).get('step_back_possible' , [])
+#         # saves api response as messages
+#         messages = []
+#         messages.append(api_response.get('question', {}).get('messages' , []))
 
-        print("MESSAGES")
-        print(messages)
+#         print("MESSAGES")
+#         print(messages)
 
-        # check the type of message
-        message_type = api_response.get('question', {}).get('type' , [])
-        print("MESSAGE TYPE")
-        print(message_type)
-        if message_type == 'generic':
-            text_content = [msg['value'] for sublist in messages for msg in sublist if msg.get('type') == 'generic']
-            print("text content")
-            print(text_content)
-        elif message_type == 'health_background':
-            text_content = [msg['text'] for sublist in messages for msg in sublist if msg.get('type') == 'text' or msg.get('type') == 'small_text']
-            print("text content")
-            print(text_content)
-        elif message_type == 'autocomplete':
-            text_content = [msg['text'] for sublist in messages for msg in sublist if msg.get('type') == 'text' or msg.get('type') == 'small_text']
-            print("text content")
-            print(text_content)
-        elif message_type == 'duration':
-            text_content = [msg['text'] for sublist in messages for msg in sublist if msg.get('type') == 'text' or msg.get('type') == 'small_text']
-            print("text content")
-            print(text_content)
-        else :
-            text_content = "No content"
-            print("text content")
-            print(text_content)
+#         # check the type of message
+#         message_type = api_response.get('question', {}).get('type' , [])
+#         print("MESSAGE TYPE")
+#         print(message_type)
+#         if message_type == 'generic':
+#             text_content = [msg['value'] for sublist in messages for msg in sublist if msg.get('type') == 'generic']
+#             print("text content")
+#             print(text_content)
+#         elif message_type == 'health_background':
+#             text_content = [msg['text'] for sublist in messages for msg in sublist if msg.get('type') == 'text' or msg.get('type') == 'small_text']
+#             print("text content")
+#             print(text_content)
+#         elif message_type == 'autocomplete':
+#             text_content = [msg['text'] for sublist in messages for msg in sublist if msg.get('type') == 'text' or msg.get('type') == 'small_text']
+#             print("text content")
+#             print(text_content)
+#         elif message_type == 'duration':
+#             text_content = [msg['text'] for sublist in messages for msg in sublist if msg.get('type') == 'text' or msg.get('type') == 'small_text']
+#             print("text content")
+#             print(text_content)
+#         else :
+#             text_content = "No content"
+#             print("text content")
+#             print(text_content)
 
-        translated_messages = []
+#         translated_messages = []
     
-        for message in text_content:
-            print(message)
-            print(translate(target_language_code, message))
-            translated_messages.append(translate(target_language_code, message))
+#         for message in text_content:
+#             print(message)
+#             print(translate(target_language_code, message))
+#             translated_messages.append(translate(target_language_code, message))
     
-        phase_value = api_response['conversation']['phase']
-        print("phase")
-        print(phase_value)
-        if (phase_value=='info_result'):
-            form = SingleChoiceForm()
-            # Accessing the articles
-            articles = api_response['report']['articles']
-            request.session['articles'] = json.dumps(articles)
-            return render(request, 'end_of_chat.html', {'messages': translated_messages, 'form': form, 'step_back_possible':step_back_possible})
-        elif (phase_value=='clarify'):
-            MultipleChoice.objects.all().delete()
-            save_mcq_label(target_language_code, api_response)
-            form = MultipleChoiceForm()
-            return render(request, 'chat.html', {'messages': translated_messages,'form': form, 'step_back_possible':step_back_possible})
-        elif (phase_value=='symptom_check'):
-            MultipleChoice.objects.all().delete()
-            save_mcq_label(target_language_code, api_response)
-            form = MultipleChoiceForm()
-            return render(request, 'chat.html', {'messages': translated_messages,'form': form, 'step_back_possible':step_back_possible})
-        elif (phase_value=='health_background'):
-            MultipleChoice.objects.all().delete()
-            save_mcq_long_name(target_language_code,api_response)
-            form = MultipleChoiceForm()
-            return render(request, 'chat.html', {'messages': translated_messages,'form': form, 'step_back_possible':step_back_possible})
-        elif (phase_value=='duration'):
-            SingleChoice.objects.all().delete()
-            save_choices_label(target_language_code,api_response)
-            form = SingleChoiceForm()
-            return render(request, 'chat.html', {'messages': translated_messages,'form': form, 'step_back_possible':step_back_possible})  
-        elif (phase_value=='autocomplete_add'):
-            SingleChoice.objects.all().delete()
-            save_choices_text(target_language_code, api_response)
-            form1 = TextInputForm()
-            form2 = SingleChoiceForm()
-            symptoms_count = TextInput.objects.count()
-            print("COUNT")
-            print(symptoms_count)
-            choices = SingleChoice.objects.all()
-            return render(request, 'chat2.html', {'messages': translated_messages,'form1': form1, 'form2': form2, 'symptoms_count': symptoms_count, 'choices':choices})
+#         phase_value = api_response['conversation']['phase']
+#         print("phase")
+#         print(phase_value)
+#         if (phase_value=='info_result'):
+#             form = SingleChoiceForm()
+#             # Accessing the articles
+#             articles = api_response['report']['articles']
+#             request.session['articles'] = json.dumps(articles)
+#             return render(request, 'end_of_chat.html', {'messages': translated_messages, 'form': form, 'step_back_possible':step_back_possible})
+#         elif (phase_value=='clarify'):
+#             MultipleChoice.objects.all().delete()
+#             save_mcq_label(target_language_code, api_response)
+#             form = MultipleChoiceForm()
+#             return render(request, 'chat.html', {'messages': translated_messages,'form': form, 'step_back_possible':step_back_possible})
+#         elif (phase_value=='symptom_check'):
+#             MultipleChoice.objects.all().delete()
+#             save_mcq_label(target_language_code, api_response)
+#             form = MultipleChoiceForm()
+#             return render(request, 'chat.html', {'messages': translated_messages,'form': form, 'step_back_possible':step_back_possible})
+#         elif (phase_value=='health_background'):
+#             MultipleChoice.objects.all().delete()
+#             save_mcq_long_name(target_language_code,api_response)
+#             form = MultipleChoiceForm()
+#             return render(request, 'chat.html', {'messages': translated_messages,'form': form, 'step_back_possible':step_back_possible})
+#         elif (phase_value=='duration'):
+#             SingleChoice.objects.all().delete()
+#             save_choices_label(target_language_code,api_response)
+#             form = SingleChoiceForm()
+#             return render(request, 'chat.html', {'messages': translated_messages,'form': form, 'step_back_possible':step_back_possible})  
+#         elif (phase_value=='autocomplete_add'):
+#             SingleChoice.objects.all().delete()
+#             save_choices_text(target_language_code, api_response)
+#             form1 = TextInputForm()
+#             form2 = SingleChoiceForm()
+#             symptoms_count = TextInput.objects.count()
+#             print("COUNT")
+#             print(symptoms_count)
+#             choices = SingleChoice.objects.all()
+#             return render(request, 'chat2.html', {'messages': translated_messages,'form1': form1, 'form2': form2, 'symptoms_count': symptoms_count, 'choices':choices})
        
-        else:
-            pass
-    else:
-        form = MultipleChoiceForm()
-    return render(request, 'chat.html', {'form': form, 'step_back_possible':step_back_possible})
+#         else:
+#             pass
+#     else:
+#         form = MultipleChoiceForm()
+#     return render(request, 'chat.html', {'form': form, 'step_back_possible':step_back_possible})
 
 def send_health_background(request):
     response_data = Chat()
@@ -957,8 +957,6 @@ def send_health_background(request):
     
         print(translated_messages)
 
-        # save_mcq_text(target_language_code, api_response)
-        # form = MultipleChoiceForm()
         return render(request, 'chat.html', {'messages': translated_messages, 'form': form, 'step_back_possible':step_back_possible})
     else:
         form = MultipleChoiceForm()
