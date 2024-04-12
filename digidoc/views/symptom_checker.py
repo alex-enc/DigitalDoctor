@@ -590,6 +590,7 @@ def send_on_boarding(request):
         if multiple:
             print("is multiple")
             choice_type = 'multiple'
+            save_APIResponse(phase, question_type, choice_type)
             descriptor = find_mcq_type(choices)
             if descriptor == 'label':
                 save_mcq_label(target_language_code, api_response)
@@ -603,6 +604,7 @@ def send_on_boarding(request):
         elif multiple == []:
             print("is multiple []")
             choice_type = 'multiple'
+            save_APIResponse(phase, question_type, choice_type)
             descriptor = find_mcq_type(choices)
             if descriptor == 'label':
                 save_mcq_label(target_language_code, api_response)
@@ -616,6 +618,7 @@ def send_on_boarding(request):
         else:
             print("is single")
             choice_type = 'single'
+            save_APIResponse(phase, question_type, choice_type)
             descriptor = find_choices_type(choices)
             if descriptor == 'label':
                 save_choices_label(target_language_code, api_response)
@@ -626,7 +629,7 @@ def send_on_boarding(request):
             form = SingleChoiceForm()
 
         print(choice_type)
-        save_APIResponse(phase, question_type, choice_type)
+
         print("phase")
         print(phase)
         template_name = get_template_for_phase(phase)
@@ -1198,7 +1201,18 @@ def see_articles(request):
     articles = json.loads(request.session['articles'])
     print("articles")
     print(articles)
-    # Render report.html with articles data
+    target_language_code = get_language_used()
+    print(target_language_code)
+    if target_language_code != 'en':
+
+        for article in articles:
+            translated_name = translate(target_language_code, article['name'])
+            translated_snippet = translate(target_language_code, article['snippet'])
+            translated_category_name = translate(target_language_code, article['category_name'])   
+            article['name'] = translated_name
+            article['snippet'] = translated_snippet
+            article['category_name'] = translated_category_name
+
     return render(request, 'articles.html', {'articles': articles})
 
 def thank_you(request):
