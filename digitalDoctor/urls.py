@@ -31,7 +31,7 @@ urlpatterns = (
     # path('health_conditions/', chat_view.send_condition, name='send_health_conditions'),
     # path('send_next/', chat_view.send_next, name='send_next'),
     # path('send_next2/', chat_view.send_next2, name='send_next2'),
-    path('thank_you/', symptom_checker.thank_you, name='thank_you'),
+    # path('thank_you/', symptom_checker.thank_you, name='thank_you'),
     path('articles/', symptom_checker.see_articles, name='articles'),
     # path('page_not_found/', chat_view.send_dynamic_buttons, name='page_not_found')
 )
